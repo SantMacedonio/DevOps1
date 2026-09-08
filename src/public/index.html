@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Shape Popper // Map Cleanser</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body class="theme-blue">
+  <div id="app-container">
+    <!-- Top Telemetry Header -->
+    <header class="app-header">
+      <div class="header-left">
+        <div class="app-logo">⬡</div>
+        <div class="app-title-block">
+          <h1>SHAPE POPPER</h1>
+          <span class="app-subtitle">GEOMETRIC MAP CLEANSING</span>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <!-- Live Blue / Green Badge -->
+        <div id="version-badge" class="badge badge-blue">
+          <span class="badge-dot"></span>
+          <span id="version-label">BLUE EDITION v1.0</span>
+        </div>
+
+        <div class="telemetry-item">
+          <span class="telemetry-label">POD:</span>
+          <span id="pod-hostname" class="telemetry-value">connecting...</span>
+        </div>
+
+        <div class="telemetry-item sync-item">
+          <span id="sync-indicator" class="sync-dot ok"></span>
+          <span id="sync-text">Redis Synced</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Game Grid: Map Viewport (75%) vs Upgrades (25%) -->
+    <main class="game-grid">
+      <!-- Left Column: The Interactive Map -->
+      <section class="panel-card map-panel">
+        <!-- Map Top HUD Bar -->
+        <div class="map-hud">
+          <div class="hud-score-block">
+            <span class="hud-label">ENERGY:</span>
+            <span class="hud-score-value" id="points-display">0</span>
+          </div>
+
+          <div class="hud-stats-group">
+            <div class="hud-chip">
+              <span class="chip-label">FIELD:</span>
+              <span id="field-count-display" class="chip-value">0 / 6</span>
+            </div>
+            <div class="hud-chip">
+              <span class="chip-label">BLAST AOE:</span>
+              <span id="blast-radius-display" class="chip-value">35px</span>
+            </div>
+            <div class="hud-chip">
+              <span class="chip-label">CHAIN:</span>
+              <span id="chain-display" class="chip-value">0 jumps</span>
+            </div>
+            <div class="hud-chip" id="turret-chip" style="display: none;">
+              <span class="chip-label">TURRETS:</span>
+              <span id="turrets-display" class="chip-value">0</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Canvas Map Stage -->
+        <div class="canvas-viewport" id="canvas-wrapper">
+          <canvas id="map-canvas"></canvas>
+          <div id="effects-overlay"></div>
+        </div>
+
+        <!-- Sub-map Bar & Multiplier Notice -->
+        <div class="map-bottom-bar">
+          <span class="map-hint">Click or hold to blast shapes. Upgrades expand blast radius.</span>
+          <div id="prestige-multiplier-banner" class="prestige-banner hidden">
+            <span>💎 Multiplier: <strong id="global-multiplier-text">x1.00</strong></span>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Column: Control & Upgrades Panel -->
+      <section class="panel-card control-card">
+        <!-- Tabs Navigation -->
+        <div class="tab-nav">
+          <button id="tab-upgrades-btn" class="tab-btn active">
+            Upgrades
+          </button>
+          <button id="tab-prestige-btn" class="tab-btn" disabled>
+            Ascension <span id="prestige-lock-pill" class="lock-pill">(v2)</span>
+          </button>
+        </div>
+
+        <!-- Tab 1: Upgrades -->
+        <div id="tab-upgrades" class="tab-content active">
+          <div class="upgrades-list" id="upgrades-container">
+            <!-- Upgrades dynamically rendered by app.js -->
+          </div>
+        </div>
+
+        <!-- Tab 2: Prestige Ascension (v2) -->
+        <div id="tab-prestige" class="tab-content">
+          <div class="prestige-panel">
+            <div class="prestige-intro">
+              <h3>DIMENSIONAL ASCENSION</h3>
+              <p class="prestige-desc">
+                Reset run for permanent <strong>Prismatic Shards</strong> and corner turrets.
+              </p>
+            </div>
+
+            <div class="prestige-stats-card">
+              <div class="stat-row">
+                <span>Harvested Shards:</span>
+                <strong id="current-shards-display">0 💎</strong>
+              </div>
+              <div class="stat-row">
+                <span>Power Boost:</span>
+                <strong id="current-multiplier-display">+0%</strong>
+              </div>
+              <div class="stat-row highlight">
+                <span>Shards on Ascension:</span>
+                <strong id="pending-shards-display">+0 💎</strong>
+              </div>
+            </div>
+
+            <div class="ascend-btn-wrap">
+              <button id="ascend-btn" class="ascend-btn" disabled>
+                ASCEND NOW
+              </button>
+            </div>
+            <p id="ascend-req-msg" class="ascend-hint">Needs 500+ energy & 30+ pops.</p>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Bottom Telemetry & Status Bar -->
+    <footer class="app-footer">
+      <div class="footer-stats">
+        <div class="stat-item">
+          <span class="stat-label">LIFETIME ENERGY:</span>
+          <strong id="stat-lifetime-points" class="stat-value">0</strong>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">SHAPES POPPED:</span>
+          <strong id="stat-lifetime-pops" class="stat-value">0</strong>
+        </div>
+        <div class="stat-item">
+          <span class="stat-label">TOTAL CLICKS:</span>
+          <strong id="stat-total-clicks" class="stat-value">0</strong>
+        </div>
+      </div>
+
+      <div class="footer-actions">
+        <button id="save-btn" class="action-btn">Save</button>
+        <button id="reset-btn" class="action-btn danger">Reset</button>
+      </div>
+    </footer>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
