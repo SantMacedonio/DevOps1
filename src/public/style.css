@@ -233,6 +233,11 @@ body {
   flex-wrap: wrap;
 }
 
+/* El atributo "hidden" reemplaza al style="display:none" inline (lo exige la CSP) */
+.hud-chip[hidden] {
+  display: none;
+}
+
 .hud-chip {
   background: var(--panel-bg);
   border: 1px solid var(--border-dim);

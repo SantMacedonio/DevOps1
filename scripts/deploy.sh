@@ -1,30 +1,35 @@
 #!/usr/bin/env bash
-set -e
+# Despliega Shape Popper (app Blue/Green + Redis) con la Helm Chart.
+# Uso: ./scripts/deploy.sh [prod|dev]   (por defecto: prod)
+#   prod -> release "shape-game"     en el namespace "default"   (values-prod.yaml)
+#   dev  -> release "shape-game-dev" en el namespace "shape-dev" (values-dev.yaml)
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+ENV=${1:-prod}
+case $ENV in
+    prod) RELEASE=shape-game;     NS=default ;;
+    dev)  RELEASE=shape-game-dev; NS=shape-dev ;;
+    *) echo "Uso: $0 [prod|dev]"; exit 1 ;;
+esac
 
 echo "=========================================="
-echo "  Deploying Game Infrastructure to Minikube"
+echo "  Deploying Shape Popper with Helm ($ENV)"
 echo "=========================================="
 
-# 1. Deploy Redis
-echo "[1/3] Deploying Redis Database & Persistent Volume..."
-kubectl apply -f k8s/redis.yaml
-kubectl rollout status deployment/redis --timeout=90s
+echo "[1/3] helm upgrade --install $RELEASE (namespace $NS)..."
+# "upgrade --install": instala si no existe y actualiza si ya existe
+helm upgrade --install "$RELEASE" ./helm-chart \
+    -f "helm-chart/values-$ENV.yaml" \
+    -n "$NS" --create-namespace \
+    --wait --timeout 5m
 
-# 2. Deploy Blue (v1.0)
-echo "[2/3] Deploying Blue Application (v1.0)..."
-kubectl apply -f k8s/blue-deployment.yaml
-kubectl rollout status deployment/shape-game-blue --timeout=90s
+echo "[2/3] Pods:"
+kubectl get pods -n "$NS" -l app.kubernetes.io/instance="$RELEASE"
 
-# 3. Deploy Kubernetes Service
-echo "[3/3] Configuring Blue/Green Service Router..."
-kubectl apply -f k8s/service.yaml
-
-echo ""
-echo "[✔] SUCCESS: Blue (v1.0) is active and running!"
-echo ""
-echo "--- Cluster Status ---"
-kubectl get pods,services -l app=shape-game
+echo "[3/3] helm test (service reachable + Redis connected)..."
+helm test "$RELEASE" -n "$NS" --logs
 
 echo ""
-echo "[➔] To open the game in your browser, run:"
-echo "    minikube service shape-game-service"
+echo "[OK] SUCCESS: $RELEASE deployed in namespace $NS"
+helm status "$RELEASE" -n "$NS" --show-resources | sed -n '/NOTES:/,$p'

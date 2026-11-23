@@ -1,0 +1,16 @@
+# Service interno de Redis: solo accesible dentro del cluster
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "shape-game.redisName" . }}
+  labels:
+    {{- include "shape-game.labels" . | nindent 4 }}
+    app.kubernetes.io/component: redis
+spec:
+  type: ClusterIP
+  ports:
+    - name: redis
+      port: {{ .Values.redis.port }}
+      targetPort: redis
+  selector:
+    {{- include "shape-game.redisSelectorLabels" . | nindent 4 }}

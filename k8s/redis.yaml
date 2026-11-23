@@ -21,6 +21,8 @@ metadata:
     component: redis
 spec:
   replicas: 1
+  strategy:
+    type: Recreate   # PVC ReadWriteOnce: evita dos pods montando el mismo volumen
   selector:
     matchLabels:
       app: shape-game
@@ -31,16 +33,28 @@ spec:
         app: shape-game
         component: redis
     spec:
+      # El pod no usa la API de Kubernetes: no montar el token de la ServiceAccount
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
       containers:
         - name: redis
-          image: redis:7-alpine
-          command:
-            - redis-server
-            - "--appendonly"
-            - "yes"
+          image: shape-redis:1.0.0
+          imagePullPolicy: IfNotPresent
+          # Sin command: se usa el CMD de la imagen (redis.conf) y el entrypoint oficial
           ports:
             - containerPort: 6379
               name: redis
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
           resources:
             requests:
               cpu: 50m

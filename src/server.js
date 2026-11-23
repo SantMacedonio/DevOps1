@@ -1,14 +1,47 @@
 const express = require('express');
-const cors = require('cors');
+const helmet = require('helmet');
 const path = require('path');
 const config = require('./config');
 const redisClient = require('./redisClient');
 const gameLogic = require('./gameLogic');
+const metrics = require('./metrics');
 
 const app = express();
 
-app.use(cors());
-app.use(express.json());
+// IDs de jugador válidos: letras, números, "_" y "-", entre 5 y 64 caracteres.
+// Evita claves arbitrarias en Redis y texto inyectado en los logs.
+const PLAYER_ID_PATTERN = /^[A-Za-z0-9_-]{5,64}$/;
+const isValidPlayerId = (id) => typeof id === 'string' && PLAYER_ID_PATTERN.test(id);
+
+// Métricas HTTP (RPS, latencia) de todas las peticiones, incluidos los estáticos
+app.use(metrics.httpMetricsMiddleware);
+
+// Headers de seguridad (CSP, X-Content-Type-Options, X-Frame-Options, etc.)
+// y sin el header "X-Powered-By: Express".
+// No se usa CORS: el frontend se sirve desde el mismo origen que la API.
+app.use(helmet({
+  contentSecurityPolicy: {
+    useDefaults: true,
+    directives: {
+      'default-src': ["'self'"],
+      'script-src': ["'self'"],
+      'style-src': ["'self'", 'https://fonts.googleapis.com'],
+      'font-src': ["'self'", 'https://fonts.gstatic.com'],
+      'img-src': ["'self'", 'data:'],
+      'connect-src': ["'self'"],
+      // La app se sirve por HTTP en minikube: no forzar HTTPS
+      'upgrade-insecure-requests': null
+    }
+  },
+  // Sin TLS no tiene sentido HSTS
+  strictTransportSecurity: false
+}));
+
+// Límite de tamaño del body (el estado de un jugador ocupa pocos KB)
+app.use(express.json({ limit: '100kb' }));
+
+// Endpoint scrapeado por Prometheus
+app.get('/metrics', metrics.metricsHandler);
 
 // Serve static frontend assets
 app.use(express.static(path.join(__dirname, 'public')));
@@ -58,7 +91,7 @@ app.get('/api/version', (req, res) => {
 // Get or initialize player state
 app.get('/api/state/:playerId', async (req, res) => {
   const { playerId } = req.params;
-  if (!playerId || playerId.length < 5) {
+  if (!isValidPlayerId(playerId)) {
     return res.status(400).json({ error: 'Valid playerId is required' });
   }
 
@@ -67,6 +100,8 @@ app.get('/api/state/:playerId', async (req, res) => {
     const state = gameLogic.sanitizeState(rawState, playerId, config.prestigeEnabled);
     
     // If it was a new player, save initial state
+    await redisClient.touchActivePlayer(playerId);
+
     if (!rawState) {
       await redisClient.savePlayerState(playerId, state);
     }
@@ -86,14 +121,21 @@ app.get('/api/state/:playerId', async (req, res) => {
 // Save player state
 app.post('/api/save', async (req, res) => {
   const { playerId, state } = req.body;
-  if (!playerId || !state) {
+  if (!isValidPlayerId(playerId) || !state || typeof state !== 'object') {
     return res.status(400).json({ error: 'PlayerId and state payload required' });
   }
 
   try {
     const sanitized = gameLogic.sanitizeState(state, playerId, config.prestigeEnabled);
     sanitized.stats.lastSaved = Date.now();
+
+    // Progreso desde el último guardado, comparado contra el estado compartido en
+    // Redis (así no importa a qué pod llegó el guardado anterior)
+    const previousState = await redisClient.getPlayerState(playerId);
+    metrics.recordProgress(previousState, sanitized);
+
     await redisClient.savePlayerState(playerId, sanitized);
+    await redisClient.touchActivePlayer(playerId);
 
     res.json({
       success: true,
@@ -110,8 +152,12 @@ app.post('/api/save', async (req, res) => {
 // Buy Upgrade endpoint
 app.post('/api/upgrade', async (req, res) => {
   const { playerId, upgradeKey } = req.body;
-  const upgradeDef = gameLogic.UPGRADES_DEF[upgradeKey];
-  if (!playerId || !upgradeKey || !upgradeDef) {
+  // hasOwn: evita que claves heredadas como "constructor" o "__proto__"
+  // pasen la validación como si fueran mejoras reales
+  const upgradeDef = typeof upgradeKey === 'string' && Object.hasOwn(gameLogic.UPGRADES_DEF, upgradeKey)
+    ? gameLogic.UPGRADES_DEF[upgradeKey]
+    : null;
+  if (!isValidPlayerId(playerId) || !upgradeDef) {
     return res.status(400).json({ error: 'Invalid playerId or upgradeKey' });
   }
 
@@ -151,6 +197,8 @@ app.post('/api/upgrade', async (req, res) => {
 
     state.stats.lastSaved = Date.now();
     await redisClient.savePlayerState(playerId, state);
+    metrics.upgradePurchased(upgradeKey);
+    await redisClient.touchActivePlayer(playerId);
 
     res.json({
       success: true,
@@ -173,7 +221,7 @@ app.post('/api/prestige', async (req, res) => {
   }
 
   const { playerId } = req.body;
-  if (!playerId) {
+  if (!isValidPlayerId(playerId)) {
     return res.status(400).json({ error: 'PlayerId is required' });
   }
 
@@ -217,6 +265,7 @@ app.post('/api/prestige', async (req, res) => {
     };
 
     await redisClient.savePlayerState(playerId, newState);
+    metrics.prestigeAscended(earnedShards);
 
     res.json({
       success: true,

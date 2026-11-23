@@ -1,0 +1,15 @@
+# Configuración común a las dos versiones de la app (se inyecta con envFrom).
+# Lo que cambia por color (versión, color, prestigio) va en cada Deployment.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "shape-game.fullname" . }}-config
+  labels:
+    {{- include "shape-game.labels" . | nindent 4 }}
+data:
+  PORT: {{ .Values.app.port | quote }}
+  REDIS_HOST: {{ include "shape-game.redisName" . | quote }}
+  REDIS_PORT: {{ .Values.redis.port | quote }}
+  {{- range $key, $value := .Values.app.extraConfig }}
+  {{ $key }}: {{ $value | quote }}
+  {{- end }}

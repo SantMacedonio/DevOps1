@@ -1,0 +1,31 @@
+Shape Popper desplegado: release "{{ .Release.Name }}" en el namespace "{{ .Release.Namespace }}".
+
+  Versión activa (recibe el tráfico): {{ upper .Values.app.activeColor }}
+{{- range $color, $v := .Values.app.versions }}
+{{- if $v.enabled }}
+  - {{ $color }}: {{ $v.image.repository }}:{{ $v.image.tag }} ({{ $v.appVersion }}) x {{ $v.replicas }} réplica(s)
+{{- end }}
+{{- end }}
+  Redis: {{ ternary (printf "PVC de %s" .Values.redis.persistence.size) "sin persistencia (emptyDir)" .Values.redis.persistence.enabled }}
+
+1. Verificar que los pods estén listos:
+     kubectl get pods -n {{ .Release.Namespace }} -l app.kubernetes.io/instance={{ .Release.Name }}
+
+2. Probar el servicio:
+     helm test {{ .Release.Name }} -n {{ .Release.Namespace }} --logs
+
+3. Abrir el juego:
+{{- if eq .Values.service.type "NodePort" }}
+     minikube service {{ include "shape-game.fullname" . }} -n {{ .Release.Namespace }}
+{{- end }}
+{{- if .Values.ingress.enabled }}
+     Ingress: http://{{ .Values.ingress.host }}
+       (en minikube: "minikube tunnel" en otra terminal y agregar
+        "127.0.0.1 {{ .Values.ingress.host }}" al archivo hosts)
+{{- end }}
+     o: kubectl port-forward -n {{ .Release.Namespace }} svc/{{ include "shape-game.fullname" . }} 8080:{{ .Values.service.port }}
+
+4. Blue/Green:
+     helm upgrade {{ .Release.Name }} ./helm-chart -n {{ .Release.Namespace }} --reset-then-reuse-values --set app.activeColor={{ ternary "blue" "green" (eq .Values.app.activeColor "green") }}
+     helm rollback {{ .Release.Name }} -n {{ .Release.Namespace }}     # volver a la revisión anterior
+     helm history {{ .Release.Name }} -n {{ .Release.Namespace }}

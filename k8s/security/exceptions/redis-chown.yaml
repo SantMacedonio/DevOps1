@@ -1,0 +1,20 @@
+# Excepción puntual a require-non-root para la migración de permisos de Redis
+# (ver README > "Solución de problemas"). Solo aplica a un pod llamado
+# "redis-chown" en el namespace "default".
+# Aplicar solo cuando se necesite y borrarla después:
+#   kubectl apply -f k8s/security/exceptions/redis-chown.yaml
+#   ... (ejecutar la migración) ...
+#   kubectl delete -f k8s/security/exceptions/redis-chown.yaml
+apiVersion: policies.kyverno.io/v1
+kind: PolicyException
+metadata:
+  name: redis-chown-migration
+  namespace: kyverno   # Kyverno solo acepta excepciones en este namespace
+spec:
+  policyRefs:
+    - name: require-non-root
+      kind: ValidatingPolicy
+  matchConditions:
+    - name: only-redis-chown-pod
+      expression: >-
+        request.namespace == 'default' && object.metadata.name == 'redis-chown'

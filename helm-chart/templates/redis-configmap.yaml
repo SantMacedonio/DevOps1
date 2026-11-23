@@ -1,0 +1,22 @@
+# redis.conf configurable por entorno. Se monta sobre el redis.conf que trae la
+# imagen shape-redis (mismo path), así se puede ajustar sin reconstruirla.
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "shape-game.redisName" . }}-config
+  labels:
+    {{- include "shape-game.labels" . | nindent 4 }}
+    app.kubernetes.io/component: redis
+data:
+  redis.conf: |
+    # Generado por la Chart shape-game ({{ .Release.Name }})
+    bind 0.0.0.0
+    port {{ .Values.redis.port }}
+    # Solo accesible dentro del cluster (Service ClusterIP)
+    protected-mode no
+    dir /data
+    appendonly {{ ternary "yes" "no" .Values.redis.appendonly }}
+    appendfsync everysec
+    maxmemory {{ .Values.redis.maxmemory }}
+    maxmemory-policy noeviction
+    loglevel notice

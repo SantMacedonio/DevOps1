@@ -1,0 +1,26 @@
+# CONFORME: tag fijo, requests/limits y usuario sin privilegios. Debe aceptarse.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-compliant
+  labels: { app: policy-test }
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: policy-test }
+  template:
+    metadata:
+      labels: { app: policy-test }
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 101
+      containers:
+        - name: web
+          image: nginxinc/nginx-unprivileged:1.29.3-alpine
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+          resources:
+            requests: { cpu: 10m, memory: 16Mi }
+            limits: { cpu: 100m, memory: 64Mi }

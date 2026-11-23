@@ -836,22 +836,34 @@
     return Math.max(1, Math.floor(Math.sqrt(currentRunPoints / 500)));
   }
 
+  // Escapa texto antes de insertarlo como HTML (evita XSS si los datos que
+  // vienen del servidor alguna vez incluyeran contenido no confiable)
+  function escapeHtml(value) {
+    return String(value)
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#39;');
+  }
+
   // Render & Update Upgrades List in DOM
   function updateUpgradesShop() {
     if (!serverInfo.upgradesDef || Object.keys(serverInfo.upgradesDef).length === 0) return;
 
     if (!upgradesListRendered) {
       let html = '';
-      for (const [key, def] of Object.entries(serverInfo.upgradesDef)) {
+      for (const [rawKey, def] of Object.entries(serverInfo.upgradesDef)) {
+        const key = escapeHtml(rawKey);
         const isV2 = def.isV2Only ? 'v2-feature' : '';
         html += `
           <div class="upgrade-item ${isV2}" id="upgrade-item-${key}">
             <div class="upgrade-info">
               <div class="upgrade-title-row">
-                <span class="upgrade-name">${def.name}</span>
+                <span class="upgrade-name">${escapeHtml(def.name)}</span>
                 <span class="upgrade-lvl" id="upgrade-lvl-${key}">Lvl 0</span>
               </div>
-              <div class="upgrade-desc">${def.desc}</div>
+              <div class="upgrade-desc">${escapeHtml(def.desc)}</div>
             </div>
             <button class="buy-btn" id="upgrade-btn-${key}" data-key="${key}">
               --
@@ -915,10 +927,14 @@
 
     if (state.points < cost) return;
 
-    state.points -= cost;
-    state.upgrades[key] = currentLvl + 1;
+    // 1) Guardar primero el saldo actual: el auto-guardado corre cada 3 s y,
+    //    sin esto, el servidor podía tener menos puntos y responder 400
+    //    ("Not enough points") aunque en pantalla alcanzaran.
+    // 2) La compra la hace el servidor, que es la única fuente de verdad:
+    //    no se descuenta localmente antes, así un auto-guardado intermedio no
+    //    puede cobrar la mejora dos veces.
     isDirty = true;
-    updateUI();
+    await saveState();
 
     try {
       const res = await fetch('/api/upgrade', {
@@ -930,9 +946,11 @@
       if (data.success && data.state) {
         state = data.state;
         updateUI();
+      } else if (data.error) {
+        console.warn('[Upgrade] Rejected by server:', data.error);
       }
     } catch (err) {
-      console.warn('[Upgrade] Local state updated; API will sync on next auto-save');
+      console.warn('[Upgrade] Request failed, upgrade not applied:', err.message);
     }
   }
 

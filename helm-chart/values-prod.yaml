@@ -1,0 +1,49 @@
+# =============================================================================
+# Entorno de PRODUCCIÓN
+#   helm install shape-game ./helm-chart -f helm-chart/values-prod.yaml
+# 2 réplicas por color (Blue y Green listos para el switch), recursos
+# completos, Redis con volumen persistente, Ingress y métricas para Prometheus.
+# =============================================================================
+app:
+  activeColor: blue
+  versions:
+    blue:
+      replicas: 2
+    green:
+      replicas: 2
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+  extraConfig:
+    NODE_ENV: production
+
+service:
+  # NodePort se mantiene para "minikube service"; el acceso principal es el Ingress
+  type: NodePort
+  nodePort: 30080
+
+ingress:
+  enabled: true
+  className: nginx
+  host: shape-game.local
+
+redis:
+  maxmemory: 200mb
+  appendonly: true
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+  persistence:
+    enabled: true
+    size: 1Gi
+
+monitoring:
+  scrape: true

@@ -1,0 +1,26 @@
+# Valores de Helm para Kyverno (chart kyverno/kyverno 3.10.0, Kyverno v1.20.0)
+#   helm upgrade --install kyverno kyverno/kyverno --version 3.10.0 \
+#     -n kyverno --create-namespace -f k8s/security/kyverno-values.yaml
+#
+# Instalación liviana para minikube: solo el admission controller, que es el
+# que valida (y rechaza) los recursos al hacer "kubectl apply".
+
+admissionController:
+  replicas: 1
+
+# No se usan reglas de generate/mutate, limpieza programada ni reportes en
+# background: se desactivan para ahorrar memoria.
+backgroundController:
+  enabled: false
+cleanupController:
+  enabled: false
+reportsController:
+  enabled: false
+
+features:
+  # Permite PolicyException (para la migración puntual de permisos de Redis,
+  # ver k8s/security/exceptions/). Solo se aceptan en el namespace "kyverno",
+  # así un usuario del namespace de la app no puede eximirse a sí mismo.
+  policyExceptions:
+    enabled: true
+    namespace: kyverno

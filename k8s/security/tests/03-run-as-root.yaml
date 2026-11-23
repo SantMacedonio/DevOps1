@@ -1,0 +1,23 @@
+# NO CONFORME (solo viola require-non-root): el contenedor corre como root (UID 0).
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: test-run-as-root
+  labels: { app: policy-test }
+spec:
+  replicas: 1
+  selector:
+    matchLabels: { app: policy-test }
+  template:
+    metadata:
+      labels: { app: policy-test }
+    spec:
+      containers:
+        - name: web
+          image: nginx:1.29.3-alpine
+          securityContext:
+            runAsUser: 0
+            readOnlyRootFilesystem: true
+          resources:
+            requests: { cpu: 10m, memory: 16Mi }
+            limits: { cpu: 100m, memory: 64Mi }

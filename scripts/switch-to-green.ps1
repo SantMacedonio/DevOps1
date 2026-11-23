@@ -1,29 +1,31 @@
-# PowerShell Script: Blue to Green Deployment & Traffic Switch
-Write-Host "==========================================" -ForegroundColor Green
-Write-Host "  Executing Blue -> Green Rolling Switch" -ForegroundColor Green
-Write-Host "==========================================" -ForegroundColor Green
+# Switch Blue/Green: el Service pasa a enviar el trafico a la version GREEN.
+# Es un "helm upgrade" que solo cambia app.activeColor (el resto de los valores
+# de la release se conserva). Para deshacerlo: switch-to-blue o "helm rollback".
+# Uso: .\scripts\switch-to-green.ps1 [-Env prod|dev]   (por defecto: prod)
+param(
+    [ValidateSet("prod", "dev")]
+    [string]$Env = "prod"
+)
+Set-Location (Join-Path $PSScriptRoot "..")
 
-# 1. Deploy Green (v2.0)
-Write-Host "[1/3] Deploying Green (v2.0 with Prestige Ascension)..." -ForegroundColor Yellow
-kubectl apply -f k8s/green-deployment.yaml
+if ($Env -eq "prod") { $release = "shape-game"; $ns = "default" }
+else { $release = "shape-game-dev"; $ns = "shape-dev" }
 
-# 2. Wait for Green pods to become completely Ready
-Write-Host "[2/3] Waiting for Green Pods to pass readiness probes..." -ForegroundColor Yellow
-kubectl rollout status deployment/shape-game-green --timeout=90s
+Write-Host "==========================================" -ForegroundColor Cyan
+Write-Host "  Blue/Green switch -> GREEN ($Env)" -ForegroundColor Cyan
+Write-Host "==========================================" -ForegroundColor Cyan
 
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "[X] Green deployment failed health checks! Traffic remains routed to Blue." -ForegroundColor Red
-    exit 1
-}
+Write-Host "[1/3] helm upgrade $release --set app.activeColor=green..." -ForegroundColor Yellow
+helm upgrade $release ./helm-chart -n $ns --reset-then-reuse-values --set app.activeColor=green --wait --timeout 5m
+if ($LASTEXITCODE -ne 0) { Write-Host "[X] helm upgrade failed" -ForegroundColor Red; exit 1 }
 
-# 3. Seamlessly switch traffic to Green
-Write-Host "[3/3] Switching Service traffic selector to version: green..." -ForegroundColor Green
-kubectl set selector service shape-game-service "app=shape-game,version=green"
+Write-Host "[2/3] Verifying (helm test)..." -ForegroundColor Yellow
+helm test $release -n $ns --logs
+if ($LASTEXITCODE -ne 0) { Write-Host "[X] helm test failed" -ForegroundColor Red; exit 1 }
 
-Write-Host ""
-Write-Host "[OK] SUCCESS: Blue/Green Switch Complete!" -ForegroundColor Green
-Write-Host "    - Active Version: GREEN (v2.0 - Prestige Ascension Enabled)" -ForegroundColor Green
-Write-Host "    - State Persistence: Player progress, points, and upgrades safely preserved in Redis." -ForegroundColor Cyan
-Write-Host ""
-Write-Host "--- Active Endpoints ---" -ForegroundColor Yellow
-kubectl get pods,services -l app=shape-game
+Write-Host "[3/3] Release history:" -ForegroundColor Yellow
+helm history $release -n $ns --max 5
+
+Write-Host "`n[OK] SUCCESS: traffic now goes to GREEN" -ForegroundColor Green
+Write-Host "     Player progress is preserved in Redis." -ForegroundColor Green
+Write-Host "     Undo: .\scripts\switch-to-blue.ps1 -Env $Env   or   helm rollback $release -n $ns" -ForegroundColor Gray

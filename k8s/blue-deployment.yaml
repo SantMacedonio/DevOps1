@@ -16,7 +16,34 @@ spec:
       labels:
         app: shape-game
         version: blue
+      annotations:
+        # Descubrimiento automático por Prometheus (ver k8s/monitoring/prometheus.yaml)
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "3000"
+        prometheus.io/path: "/metrics"
     spec:
+      # El pod no usa la API de Kubernetes: no montar el token de la ServiceAccount
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      # Reparte las réplicas en nodos distintos cuando hay más de uno.
+      # "preferred" (no "required"): en minikube hay un solo nodo y con
+      # "required" la segunda réplica quedaría en Pending.
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchLabels:
+                    app: shape-game
+                    version: blue
       containers:
         - name: shape-game
           image: shape-game:v1
@@ -39,6 +66,11 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: metadata.name
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
           resources:
             requests:
               cpu: 50m

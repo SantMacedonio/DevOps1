@@ -1,0 +1,97 @@
+{{- /*
+Un Deployment por cada versión (color) habilitada en .Values.app.versions.
+Ambos colores pueden convivir; el Service decide cuál recibe el tráfico.
+*/ -}}
+{{- range $color, $v := .Values.app.versions }}
+{{- if $v.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "shape-game.fullname" $ }}-{{ $color }}
+  labels:
+    {{- include "shape-game.labels" $ | nindent 4 }}
+    {{- include "shape-game.appSelectorLabels" $ | nindent 4 }}
+    version: {{ $color }}
+spec:
+  replicas: {{ $v.replicas }}
+  selector:
+    matchLabels:
+      {{- include "shape-game.appSelectorLabels" $ | nindent 6 }}
+      version: {{ $color }}
+  template:
+    metadata:
+      labels:
+        {{- include "shape-game.labels" $ | nindent 8 }}
+        {{- include "shape-game.appSelectorLabels" $ | nindent 8 }}
+        version: {{ $color }}
+      annotations:
+        # Reinicia los pods si cambia la configuración (helm upgrade)
+        checksum/config: {{ include (print $.Template.BasePath "/app-configmap.yaml") $ | sha256sum }}
+        {{- if $.Values.monitoring.scrape }}
+        # Descubrimiento automático por Prometheus (k8s/monitoring/prometheus.yaml)
+        prometheus.io/scrape: "true"
+        prometheus.io/port: {{ $.Values.app.port | quote }}
+        prometheus.io/path: "/metrics"
+        {{- end }}
+    spec:
+      # El pod no usa la API de Kubernetes: no montar el token de la ServiceAccount
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      # Reparte las réplicas en nodos distintos cuando hay más de uno.
+      # "preferred" (no "required"): en minikube hay un solo nodo.
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchLabels:
+                    {{- include "shape-game.appSelectorLabels" $ | nindent 20 }}
+                    version: {{ $color }}
+      containers:
+        - name: shape-game
+          image: "{{ $v.image.repository }}:{{ $v.image.tag }}"
+          imagePullPolicy: {{ $.Values.app.image.pullPolicy }}
+          ports:
+            - containerPort: {{ $.Values.app.port }}
+              name: http
+          envFrom:
+            - configMapRef:
+                name: {{ include "shape-game.fullname" $ }}-config
+          env:
+            - name: APP_VERSION
+              value: {{ $v.appVersion | quote }}
+            - name: APP_COLOR
+              value: {{ $color | quote }}
+            - name: PRESTIGE_ENABLED
+              value: {{ $v.prestigeEnabled | quote }}
+            - name: HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+          securityContext:
+            {{- include "shape-game.containerSecurityContext" $ | nindent 12 }}
+          resources:
+            {{- toYaml $.Values.app.resources | nindent 12 }}
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: http
+            initialDelaySeconds: 3
+            periodSeconds: 5
+{{- end }}
+{{- end }}

@@ -1,26 +1,32 @@
 #!/usr/bin/env bash
-set -e
+# Switch Blue/Green: el Service pasa a enviar el tráfico a la versión GREEN.
+# Es un "helm upgrade" que solo cambia app.activeColor (el resto de los valores
+# de la release se conserva). Para deshacerlo: switch-to-blue o "helm rollback".
+# Uso: ./scripts/switch-to-green.sh [prod|dev]   (por defecto: prod)
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+ENV=${1:-prod}
+case $ENV in
+    prod) RELEASE=shape-game;     NS=default ;;
+    dev)  RELEASE=shape-game-dev; NS=shape-dev ;;
+    *) echo "Uso: $0 [prod|dev]"; exit 1 ;;
+esac
 
 echo "=========================================="
-echo "  Executing Blue -> Green Rolling Switch"
+echo "  Blue/Green switch -> GREEN ($ENV)"
 echo "=========================================="
 
-# 1. Deploy Green (v2.0)
-echo "[1/3] Deploying Green (v2.0 with Prestige Ascension)..."
-kubectl apply -f k8s/green-deployment.yaml
+echo "[1/3] helm upgrade $RELEASE --set app.activeColor=green..."
+helm upgrade "$RELEASE" ./helm-chart -n "$NS"     --reset-then-reuse-values --set app.activeColor=green     --wait --timeout 5m
 
-# 2. Wait for Green pods to become completely Ready
-echo "[2/3] Waiting for Green Pods to pass readiness probes..."
-kubectl rollout status deployment/shape-game-green --timeout=90s
+echo "[2/3] Verifying (helm test)..."
+helm test "$RELEASE" -n "$NS" --logs
 
-# 3. Seamlessly switch traffic to Green
-echo "[3/3] Switching Service traffic selector to 'version: green'..."
-kubectl patch service shape-game-service -p '{"spec":{"selector":{"app":"shape-game","version":"green"}}}'
+echo "[3/3] Release history:"
+helm history "$RELEASE" -n "$NS" --max 5
 
 echo ""
-echo "[✔] SUCCESS: Blue/Green Switch Complete!"
-echo "    - Active Version: GREEN (v2.0 - Prestige Ascension Enabled)"
-echo "    - State Persistence: Player progress, points, and upgrades safely preserved in Redis."
-echo ""
-echo "--- Active Endpoints ---"
-kubectl get pods,services -l app=shape-game
+echo "[OK] SUCCESS: traffic now goes to GREEN"
+echo "     Player progress is preserved in Redis."
+echo "     Undo: ./scripts/switch-to-blue.sh $ENV   or   helm rollback $RELEASE -n $NS"

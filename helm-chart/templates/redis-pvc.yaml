@@ -1,0 +1,22 @@
+{{- if .Values.redis.persistence.enabled }}
+# Volumen persistente de Redis (AOF). Se conserva al desinstalar la release
+# ("helm.sh/resource-policy: keep") para no perder partidas por accidente.
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ include "shape-game.redisName" . }}-data
+  labels:
+    {{- include "shape-game.labels" . | nindent 4 }}
+    app.kubernetes.io/component: redis
+  annotations:
+    helm.sh/resource-policy: keep
+spec:
+  accessModes:
+    - ReadWriteOnce
+  {{- with .Values.redis.persistence.storageClass }}
+  storageClassName: {{ . }}
+  {{- end }}
+  resources:
+    requests:
+      storage: {{ .Values.redis.persistence.size }}
+{{- end }}

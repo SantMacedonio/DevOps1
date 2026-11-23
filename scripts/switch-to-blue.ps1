@@ -1,15 +1,31 @@
-# PowerShell Script: Rollback to Blue (v1.0)
+# Switch Blue/Green: el Service pasa a enviar el trafico a la version BLUE.
+# Es un "helm upgrade" que solo cambia app.activeColor (el resto de los valores
+# de la release se conserva). Para deshacerlo: switch-to-green o "helm rollback".
+# Uso: .\scripts\switch-to-blue.ps1 [-Env prod|dev]   (por defecto: prod)
+param(
+    [ValidateSet("prod", "dev")]
+    [string]$Env = "prod"
+)
+Set-Location (Join-Path $PSScriptRoot "..")
+
+if ($Env -eq "prod") { $release = "shape-game"; $ns = "default" }
+else { $release = "shape-game-dev"; $ns = "shape-dev" }
+
 Write-Host "==========================================" -ForegroundColor Cyan
-Write-Host "  Rolling Back Traffic to Blue (v1.0)" -ForegroundColor Cyan
+Write-Host "  Blue/Green switch -> BLUE ($Env)" -ForegroundColor Cyan
 Write-Host "==========================================" -ForegroundColor Cyan
 
-# Patch Service selector to blue
-Write-Host "[1/1] Switching Service traffic selector to version: blue..." -ForegroundColor Yellow
-kubectl set selector service shape-game-service "app=shape-game,version=blue"
+Write-Host "[1/3] helm upgrade $release --set app.activeColor=blue..." -ForegroundColor Yellow
+helm upgrade $release ./helm-chart -n $ns --reset-then-reuse-values --set app.activeColor=blue --wait --timeout 5m
+if ($LASTEXITCODE -ne 0) { Write-Host "[X] helm upgrade failed" -ForegroundColor Red; exit 1 }
 
-Write-Host ""
-Write-Host "[OK] SUCCESS: Rollback to Blue Complete!" -ForegroundColor Green
-Write-Host "    - Active Version: BLUE (v1.0)" -ForegroundColor Cyan
-Write-Host ""
-Write-Host "--- Active Endpoints ---" -ForegroundColor Yellow
-kubectl get pods,services -l app=shape-game
+Write-Host "[2/3] Verifying (helm test)..." -ForegroundColor Yellow
+helm test $release -n $ns --logs
+if ($LASTEXITCODE -ne 0) { Write-Host "[X] helm test failed" -ForegroundColor Red; exit 1 }
+
+Write-Host "[3/3] Release history:" -ForegroundColor Yellow
+helm history $release -n $ns --max 5
+
+Write-Host "`n[OK] SUCCESS: traffic now goes to BLUE" -ForegroundColor Green
+Write-Host "     Player progress is preserved in Redis." -ForegroundColor Green
+Write-Host "     Undo: .\scripts\switch-to-green.ps1 -Env $Env   or   helm rollback $release -n $ns" -ForegroundColor Gray

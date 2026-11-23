@@ -3,6 +3,12 @@ npm-debug.log
 .git
 .gitignore
 .env
+.claude
+.dive-ci
 k8s
 scripts
+reports
+redis
 *.md
+Dockerfile
+.dockerignore

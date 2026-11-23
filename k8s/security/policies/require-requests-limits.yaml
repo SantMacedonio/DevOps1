@@ -1,0 +1,44 @@
+# Política 2: exigir requests y limits de CPU y memoria en todos los contenedores.
+# Sin requests el scheduler no sabe cuánto reservar; sin limits un contenedor
+# puede consumir todos los recursos del nodo y afectar al resto.
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: require-requests-limits
+  annotations:
+    policies.kyverno.io/title: Exigir requests y limits
+    policies.kyverno.io/severity: medium
+spec:
+  validationActions: [Deny]
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: [v1]
+        operations: [CREATE, UPDATE]
+        resources: [pods]
+    namespaceSelector:
+      matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: NotIn
+          values: [kube-system, kube-public, kube-node-lease, kyverno, falco, ingress-nginx]
+  autogen:
+    podControllers:
+      controllers: [deployments, replicasets, statefulsets, daemonsets, jobs, cronjobs]
+  variables:
+    - name: containers
+      expression: >-
+        object.spec.containers +
+        (has(object.spec.initContainers) ? object.spec.initContainers : [])
+    - name: missing
+      expression: >-
+        variables.containers.filter(c,
+          !has(c.resources) ||
+          !has(c.resources.requests) || !('cpu' in c.resources.requests) || !('memory' in c.resources.requests) ||
+          !has(c.resources.limits) || !('cpu' in c.resources.limits) || !('memory' in c.resources.limits)
+        ).map(c, c.name)
+  validations:
+    - expression: size(variables.missing) == 0
+      messageExpression: >-
+        'Todos los contenedores deben definir resources.requests y resources.limits de cpu y memory. Contenedores sin definir: ' +
+        variables.missing.join(', ')

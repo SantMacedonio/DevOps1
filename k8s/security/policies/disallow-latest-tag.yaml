@@ -1,0 +1,49 @@
+# Política 1: prohibir imágenes sin tag o con la etiqueta "latest".
+# "latest" cambia con el tiempo: dos despliegues del mismo manifiesto podrían
+# usar imágenes distintas y no se sabría qué versión está corriendo.
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: disallow-latest-tag
+  annotations:
+    policies.kyverno.io/title: Prohibir la etiqueta latest
+    policies.kyverno.io/severity: medium
+spec:
+  validationActions: [Deny]
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: [v1]
+        operations: [CREATE, UPDATE]
+        resources: [pods]
+    # Excluidos: namespaces del sistema, de las herramientas de seguridad y el
+    # Ingress Controller de minikube (addon, no define requests/limits)
+    namespaceSelector:
+      matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: NotIn
+          values: [kube-system, kube-public, kube-node-lease, kyverno, falco, ingress-nginx]
+  # Kyverno genera automáticamente la misma validación para los controladores
+  # (Deployment, Job...): el manifiesto se rechaza en el "kubectl apply".
+  autogen:
+    podControllers:
+      controllers: [deployments, replicasets, statefulsets, daemonsets, jobs, cronjobs]
+  variables:
+    - name: containers
+      expression: >-
+        object.spec.containers +
+        (has(object.spec.initContainers) ? object.spec.initContainers : [])
+    # Una imagen tiene tag si después de la última "/" hay ":" (o si usa digest @sha256)
+    - name: badImages
+      expression: >-
+        variables.containers
+          .filter(c, !(c.image.contains('@') ||
+                       c.image.substring(c.image.lastIndexOf('/') + 1).contains(':'))
+                     || c.image.endsWith(':latest'))
+          .map(c, c.image)
+  validations:
+    - expression: size(variables.badImages) == 0
+      messageExpression: >-
+        'Prohibido usar imágenes sin tag o con la etiqueta latest. Usar una versión fija. Imágenes rechazadas: ' +
+        variables.badImages.join(', ')
