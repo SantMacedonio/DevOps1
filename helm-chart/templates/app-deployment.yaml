@@ -37,6 +37,12 @@ spec:
     spec:
       # El pod no usa la API de Kubernetes: no montar el token de la ServiceAccount
       automountServiceAccountToken: false
+      {{- with $.Values.app.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+      # Sin variables <SERVICIO>_PORT inyectadas por Kubernetes (podrían pisar REDIS_PORT)
+      enableServiceLinks: false
       securityContext:
         runAsNonRoot: true
         runAsUser: 1000

@@ -16,6 +16,8 @@ metadata:
 spec:
   restartPolicy: Never
   automountServiceAccountToken: false
+  # Sin variables <SERVICIO>_PORT inyectadas por Kubernetes (podrían pisar REDIS_PORT)
+  enableServiceLinks: false
   securityContext:
     runAsNonRoot: true
     runAsUser: 1000
@@ -31,10 +33,15 @@ spec:
         - |
           set -e
           URL="http://{{ include "shape-game.fullname" . }}:{{ .Values.service.port }}"
-          echo "GET $URL/readyz"
-          RESP=$(wget -qO- "$URL/readyz")
-          echo "$RESP"
-          echo "$RESP" | grep -q '"redis":"connected"' || { echo "FAIL: la app no está conectada a Redis"; exit 1; }
+          # La app arranca aunque Redis todavía no esté listo (modo degradado en
+          # memoria) y se reconecta sola: se espera hasta 30 s a que conecte.
+          for i in $(seq 1 15); do
+            RESP=$(wget -qO- "$URL/readyz" || true)
+            echo "GET $URL/readyz (intento $i): $RESP"
+            echo "$RESP" | grep -q '"redis":"connected"' && break
+            if [ "$i" = 15 ]; then echo "FAIL: la app no se conectó a Redis en 30 s"; exit 1; fi
+            sleep 2
+          done
           echo "$RESP" | grep -q '"color":"{{ .Values.app.activeColor }}"' || { echo "FAIL: el Service no apunta a {{ .Values.app.activeColor }}"; exit 1; }
           wget -q --spider "$URL/" && echo "GET $URL/ -> 200 (frontend OK)"
           echo "OK: servicio accesible, color activo {{ .Values.app.activeColor }}, Redis conectado"

@@ -101,11 +101,11 @@ Kyverno genera automáticamente la misma validación para los controladores (Dep
 | `03-run-as-root.yaml` | Rechazo | ✅ Rechazado | *Los contenedores no pueden ejecutarse como root…* |
 | `04-compliant.yaml` | Aceptación | ✅ Aceptado | — |
 
-Además, todos los recursos del proyecto (app, Redis, Prometheus, Grafana y el generador de tráfico) se volvieron a desplegar con las políticas activas sin ningún rechazo.
+Además, todos los recursos del proyecto (app, Redis, Prometheus, Grafana y el generador de tráfico) se volvieron a desplegar con las políticas activas sin ningún rechazo. Lo mismo vale para la Helm Chart, con los tres juegos de valores (`values.yaml`, `values-dev.yaml` y `values-prod.yaml`).
 
 **Excepciones y exclusiones, con su justificación:**
 
-- **Namespaces excluidos:** `kube-system`, `kube-public`, `kube-node-lease`, `kyverno` y `falco`. Los componentes del sistema y Falco necesitan privilegios. Falco corre como root porque carga un programa eBPF en el kernel para observar las llamadas al sistema.
+- **Namespaces excluidos:** `kube-system`, `kube-public`, `kube-node-lease`, `kyverno`, `falco` e `ingress-nginx`. Los componentes del sistema y Falco necesitan privilegios. Falco corre como root porque carga un programa eBPF en el kernel para observar las llamadas al sistema. El Ingress Controller lo instala minikube (addon) sin `requests` ni `limits`, y la política lo bloqueaba.
 - **`PolicyException` puntual** ([`k8s/security/exceptions/redis-chown.yaml`](../k8s/security/exceptions/redis-chown.yaml)): para la migración de permisos de Redis, que requiere un pod root una sola vez. Solo aplica a un pod llamado `redis-chown` en `default`. Se aplica antes de la migración y se borra después. Kyverno solo acepta excepciones creadas en el namespace `kyverno`, así que alguien con acceso únicamente a `default` no puede eximirse a sí mismo.
 - **`failurePolicy: Fail`:** si Kyverno no responde, los pods de los namespaces controlados no se crean. Se priorizó la seguridad sobre la disponibilidad.
 

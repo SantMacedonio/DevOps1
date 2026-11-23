@@ -32,4 +32,4 @@ helm test "$RELEASE" -n "$NS" --logs
 
 echo ""
 echo "[OK] SUCCESS: $RELEASE deployed in namespace $NS"
-helm status "$RELEASE" -n "$NS" --show-resources | sed -n '/NOTES:/,$p'
+helm get notes "$RELEASE" -n "$NS"

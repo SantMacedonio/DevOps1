@@ -30,6 +30,4 @@ helm test $release -n $ns --logs
 if ($LASTEXITCODE -ne 0) { Write-Host "[X] helm test failed" -ForegroundColor Red; exit 1 }
 
 Write-Host "`n[OK] SUCCESS: $release deployed in namespace $ns" -ForegroundColor Green
-$notes = helm status $release -n $ns
-$print = $false
-foreach ($line in $notes) { if ($line -like "NOTES:*") { $print = $true }; if ($print) { $line } }
+helm get notes $release -n $ns

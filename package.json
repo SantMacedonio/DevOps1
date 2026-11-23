@@ -5,7 +5,10 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "node --watch src/server.js"
+    "dev": "node --watch src/server.js",
+    "test": "node --test --test-force-exit \"tests/**/*.test.js\"",
+    "pretest:ci": "node -e \"require('fs').mkdirSync('reports/tests',{recursive:true})\"",
+    "test:ci": "node --test --test-force-exit --test-reporter=spec --test-reporter-destination=stdout --test-reporter=junit --test-reporter-destination=reports/tests/junit.xml \"tests/**/*.test.js\""
   },
   "dependencies": {
     "@prometheus-io/client": "0.16.1",
@@ -14,7 +17,7 @@
     "ioredis": "^5.11.1"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=22.0.0"
   },
   "author": "",
   "license": "MIT"

@@ -42,7 +42,11 @@ function initRedis() {
   }
 }
 
-initRedis();
+if (config.redis.enabled) {
+  initRedis();
+} else {
+  console.log('[Redis] Disabled (REDIS_ENABLED=false): using in-memory store only');
+}
 
 async function getPlayerState(playerId) {
   if (!playerId) return null;

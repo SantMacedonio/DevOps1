@@ -12,3 +12,10 @@ redis
 *.md
 Dockerfile
 .dockerignore
+tests
+jenkins
+Jenkinsfile
+helm-chart
+grafana
+.env*
+ci

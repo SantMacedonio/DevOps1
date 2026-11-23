@@ -22,6 +22,8 @@ spec:
         checksum/config: {{ include (print $.Template.BasePath "/redis-configmap.yaml") . | sha256sum }}
     spec:
       automountServiceAccountToken: false
+      # Sin variables <SERVICIO>_PORT inyectadas por Kubernetes (podrían pisar REDIS_PORT)
+      enableServiceLinks: false
       securityContext:
         runAsNonRoot: true
         runAsUser: 999

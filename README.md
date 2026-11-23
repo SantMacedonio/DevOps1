@@ -12,28 +12,33 @@ El proyecto desacopla completamente el frontend y la lógica de juego (pods sin 
 
 ### Arquitectura
 
+Todo lo que está dentro del recuadro lo despliega la **Helm Chart** ([`helm-chart/`](helm-chart/)) como una release (en prod: `shape-game`, namespace `default`).
+
 ```
-                 navegador
-                     │  http://<minikube-ip>:30080
-                     ▼
-        ┌──────────────────────────┐
-        │ Service shape-game-service│  NodePort · selector: version=blue|green
-        └────────────┬─────────────┘
-          (switch)   │
-       ┌─────────────┴──────────────┐
-       ▼                            ▼
-┌──────────────────┐        ┌──────────────────┐
-│ shape-game-blue  │        │ shape-game-green │   Deployments (2 réplicas c/u)
-│ shape-game:v1    │        │ shape-game:v2    │   Express: API + frontend estático
-└────────┬─────────┘        └────────┬─────────┘
-         └────────────┬──────────────┘
-                      ▼
-            ┌──────────────────┐
-            │ redis-service    │  ClusterIP :6379
-            │ shape-redis:1.0.0│  Deployment (1 réplica)
-            └────────┬─────────┘
-                     ▼
-              PVC redis-pvc (1Gi, AOF)
+        navegador ── http://shape-game.local (Ingress) ── o ── NodePort :30080
+                                       │
+   ┌───────────────────────────────────┼────────────────────────────────────┐
+   │ release Helm "shape-game"         ▼                                    │
+   │                  ┌──────────────────────────────┐                      │
+   │                  │ Service shape-game           │  selector: version = │
+   │                  │ (app.activeColor)            │  blue | green        │
+   │                  └──────────────┬───────────────┘                      │
+   │                    (switch)     │                                      │
+   │              ┌──────────────────┴───────────────┐                      │
+   │              ▼                                  ▼                      │
+   │   ┌────────────────────┐            ┌────────────────────┐             │
+   │   │ shape-game-blue    │            │ shape-game-green   │ Deployments │
+   │   │ shape-game:v1      │            │ shape-game:v2      │ Express:    │
+   │   └─────────┬──────────┘            └─────────┬──────────┘ API + web   │
+   │             └──────────────┬───────────────────┘   ▲ ConfigMap         │
+   │                            ▼                            shape-game-config
+   │                 ┌──────────────────────┐                               │
+   │                 │ shape-game-redis     │  ClusterIP :6379              │
+   │                 │ shape-redis:1.0.0    │  ▲ ConfigMap (redis.conf)     │
+   │                 └──────────┬───────────┘                               │
+   │                            ▼                                           │
+   │                 PVC shape-game-redis-data (1Gi, AOF)                   │
+   └────────────────────────────────────────────────────────────────────────┘
 ```
 
 ### Componentes y contenedores
@@ -73,7 +78,7 @@ Versiones probadas:
 | kubectl | 1.34+ |
 | Trivy *(opcional, para el análisis)* | 0.76 · si no está instalado se usa el contenedor `aquasec/trivy` |
 | Dive *(opcional, para el análisis)* | 0.13 · si no está instalado se usa el contenedor `wagoodman/dive` |
-| Helm *(para Kyverno y Falco)* | 3.x |
+| Helm | 4.3 (los scripts usan opciones de Helm 4) |
 | KubeLinter *(opcional)* | 0.8 · si no está instalado se usa el contenedor `stackrox/kube-linter` |
 | Semgrep | No hace falta instalarlo: se usa el contenedor `semgrep/semgrep:1.186.0` |
 
@@ -90,25 +95,33 @@ Todos los scripts se pueden ejecutar desde cualquier carpeta. Están en `scripts
    ```
    El script construye `shape-game:v1`, `shape-game:v2` y `shape-redis:1.0.0` en el Docker local y las carga en Minikube con `minikube image load`.
 
-3. **Desplegar Redis y la versión Blue inicial:**
+3. **Desplegar con Helm** (app blue y green + Redis). El script hace `helm upgrade --install`, espera a que los pods estén listos y corre `helm test`:
    ```powershell
-   .\scripts\deploy.ps1       # ./scripts/deploy.sh
+   .\scripts\deploy.ps1                  # producción: release "shape-game" en "default"
+   .\scripts\deploy.ps1 -Env dev         # desarrollo: release "shape-game-dev" en "shape-dev"
+   # Linux/macOS: ./scripts/deploy.sh [prod|dev]
+   ```
+   O directamente con Helm (ver [Despliegue con Helm](#despliegue-con-helm)):
+   ```bash
+   helm install shape-game ./helm-chart -f helm-chart/values-prod.yaml
    ```
 
 4. **Abrir el juego en el navegador:**
    ```bash
-   minikube service shape-game-service
+   minikube service shape-game          # prod (NodePort 30080)
+   minikube service shape-game-dev -n shape-dev   # dev (NodePort 30081)
    ```
 
-5. **Cambiar a la versión Green:**
+5. **Cambiar a la versión Green** (un `helm upgrade` que solo cambia `app.activeColor`):
    ```powershell
-   .\scripts\switch-to-green.ps1   # ./scripts/switch-to-green.sh
+   .\scripts\switch-to-green.ps1   # ./scripts/switch-to-green.sh   (agregar "dev" para ese entorno)
    ```
    *Al refrescar la página, la interfaz cambia al tema verde y desbloquea el Prestigio sin perder tus puntos acumulados.*
 
-6. **Rollback a Blue (si fuera necesario):**
+6. **Volver a Blue** (si fuera necesario):
    ```powershell
    .\scripts\switch-to-blue.ps1    # ./scripts/switch-to-blue.sh
+   helm rollback shape-game        # alternativa: volver a la revisión anterior de Helm
    ```
 
 7. **Eliminar todo:**
@@ -119,18 +132,110 @@ Todos los scripts se pueden ejecutar desde cualquier carpeta. Están en `scripts
 ### Verificar el despliegue
 
 ```bash
-kubectl get pods,svc -l app=shape-game          # todos los pods en Running 1/1
-kubectl port-forward svc/shape-game-service 8080:80
-curl http://localhost:8080/readyz                # {"status":"ready","color":"blue",...,"redis":"connected"}
+helm list -A                                     # releases instaladas
+kubectl get pods -l app.kubernetes.io/instance=shape-game   # todos los pods en Running 1/1
+helm test shape-game --logs                      # el Service responde, el frontend da 200 y Redis está conectado
+kubectl port-forward svc/shape-game 8080:80
 curl http://localhost:8080/api/version           # versión y color activos
 ```
 
 Para comprobar que los contenedores **no** corren como root:
 
 ```bash
-kubectl exec deploy/shape-game-blue -- id   # uid=1000(node)
-kubectl exec deploy/redis -- id             # uid=999(redis)
+kubectl exec deploy/shape-game-blue -- id    # uid=1000(node)
+kubectl exec deploy/shape-game-redis -- id   # uid=999(redis)
 ```
+
+---
+
+## Despliegue con Helm
+
+La Chart [`helm-chart/`](helm-chart/) despliega todo el proyecto: las dos versiones de la app y Redis. Prometheus, Grafana, Kyverno y Falco quedan afuera a propósito. Son herramientas de plataforma que se instalan una vez por cluster con sus propios scripts, no en cada despliegue de la app.
+
+```
+helm-chart/
+├── Chart.yaml
+├── values.yaml            # valores por defecto: alcanza con "helm install <nombre> ./helm-chart"
+├── values-dev.yaml        # entorno de desarrollo
+├── values-prod.yaml       # entorno de producción
+└── templates/
+    ├── _helpers.tpl       # nombres, etiquetas y securityContext comunes
+    ├── NOTES.txt          # instrucciones que se muestran después de instalar
+    ├── app-configmap.yaml     ├── redis-configmap.yaml   (redis.conf)
+    ├── app-deployment.yaml    ├── redis-deployment.yaml
+    ├── app-service.yaml       ├── redis-service.yaml
+    ├── ingress.yaml           ├── redis-pvc.yaml
+    └── tests/test-connection.yaml   # helm test
+```
+
+- **Un Deployment por color:** `app-deployment.yaml` recorre `app.versions` y genera un Deployment por cada versión habilitada.
+- **El switch:** el Service apunta a `app.activeColor`. Si se pide un color que no existe o está deshabilitado, la Chart falla con un mensaje claro en vez de desplegar un Service sin pods.
+- **Reinicio automático:** los Deployments llevan el *checksum* de su ConfigMap, así un cambio de configuración reinicia los pods con `helm upgrade`.
+- **El PVC de Redis sobrevive al `uninstall`:** tiene `helm.sh/resource-policy: keep`, para no perder partidas por accidente. `cleanup` lo borra explícitamente.
+
+### Parámetros principales (`values.yaml`)
+
+| Parámetro | Por defecto | Descripción |
+| :--- | :--- | :--- |
+| `app.activeColor` | `blue` | Versión que recibe el tráfico (`blue` o `green`) |
+| `app.port` | `3000` | Puerto del contenedor |
+| `app.versions.<color>.enabled` / `.replicas` | `true` / `1` | Si se despliega esa versión y con cuántas réplicas |
+| `app.versions.<color>.image.repository` / `.tag` | `shape-game` / `v1`, `v2` | Imagen de cada versión |
+| `app.resources` | `50m`–`200m` CPU, `64Mi`–`256Mi` | Requests y limits de la app |
+| `app.extraConfig` | `NODE_ENV: production` | Variables extra en el ConfigMap |
+| `service.type` / `.port` / `.nodePort` | `NodePort` / `80` / `30080` | Exposición del Service |
+| `ingress.enabled` / `.host` / `.className` | `false` / `shape-game.local` / `nginx` | Ingress |
+| `redis.image.*`, `redis.resources`, `redis.maxmemory`, `redis.appendonly` | `shape-redis:1.0.0`, …, `200mb`, `true` | Redis |
+| `redis.persistence.enabled` / `.size` | `true` / `1Gi` | PVC o `emptyDir` |
+| `monitoring.scrape` | `true` | Anotaciones para Prometheus |
+| `tests.enabled` | `true` | Pod de `helm test` |
+
+### Entornos
+
+| | `values-dev.yaml` | `values-prod.yaml` |
+| :--- | :--- | :--- |
+| Release / namespace | `shape-game-dev` / `shape-dev` | `shape-game` / `default` |
+| Réplicas por color | 1 | 2 |
+| Recursos de la app | `25m`–`150m` CPU, `48Mi`–`128Mi` | `50m`–`200m` CPU, `64Mi`–`256Mi` |
+| Acceso | NodePort `30081` | **Ingress** `shape-game.local` + NodePort `30080` |
+| Redis | Sin PVC (`emptyDir`), sin AOF, `maxmemory 64mb` | PVC 1Gi, AOF, `maxmemory 200mb` |
+| `NODE_ENV` | `development` | `production` |
+| Métricas para Prometheus | No | Sí |
+
+Los dos entornos pueden convivir en el cluster.
+
+```bash
+helm install shape-game ./helm-chart -f helm-chart/values-prod.yaml
+helm install shape-game-dev ./helm-chart -f helm-chart/values-dev.yaml -n shape-dev --create-namespace
+```
+
+### Blue/Green y rollback con Helm
+
+```bash
+helm upgrade shape-game ./helm-chart --reset-then-reuse-values --set app.activeColor=green --wait
+helm history shape-game      # cada switch queda como una revisión
+helm rollback shape-game     # vuelve a la revisión anterior
+```
+
+`--reset-then-reuse-values` conserva los valores de la release (por ejemplo, los de `values-prod.yaml`) y solo cambia el color.
+
+### Ingress
+
+En producción la app se expone con un Ingress (host `shape-game.local`) a través del Ingress Controller de minikube:
+
+```bash
+minikube addons enable ingress
+minikube tunnel            # en otra terminal; en Windows puede pedir permisos de administrador
+```
+
+Para abrir `http://shape-game.local` en el navegador, agregá `127.0.0.1 shape-game.local` al archivo `hosts` (`C:\Windows\System32\drivers\etc\hosts`). Para probarlo sin tunnel ni `hosts`:
+
+```bash
+kubectl port-forward -n ingress-nginx svc/ingress-nginx-controller 8088:80
+curl -H "Host: shape-game.local" http://localhost:8088/api/version
+```
+
+El namespace `ingress-nginx` está excluido de las políticas de Kyverno: el addon de minikube no define `requests` ni `limits` y la política lo bloqueaba.
 
 ---
 
@@ -233,7 +338,7 @@ kubectl get secret grafana-admin -n monitoring -o jsonpath='{.data.admin-passwor
 .\scripts\generate-traffic.ps1 -Duration 300 -Players 8   # ./scripts/generate-traffic.sh 300 8
 ```
 
-El script crea un Job **dentro del cluster** ([`k8s/loadgen/`](k8s/loadgen/)) que simula jugadores contra `shape-game-service`: consultan su estado, guardan progreso, compran mejoras y de vez en cuando intentan ascender.
+El script crea un Job **dentro del cluster** ([`k8s/loadgen/`](k8s/loadgen/)) que simula jugadores contra el Service `shape-game` (release de prod): consultan su estado, guardan progreso, compran mejoras y de vez en cuando intentan ascender.
 
 El tráfico se genera desde adentro porque `kubectl port-forward` se conecta a un único pod y no sigue el switch blue → green. Desde el cluster, en cambio, las peticiones pasan por el Service.
 
@@ -281,17 +386,17 @@ kubectl logs -n falco -l app.kubernetes.io/name=falco -c falco -f | grep '^{'
 
 ## Solución de problemas
 
-**Redis en `CrashLoopBackOff` con `Permission denied` sobre `appendonly.aof`.** Pasa si el PVC `redis-pvc` contiene datos de una versión anterior del proyecto, en la que Redis corría como root. Para pasarle los archivos al usuario `redis` hace falta un pod que corra como root. Como Kyverno lo bloquea, primero se aplica una excepción puntual ([`k8s/security/exceptions/redis-chown.yaml`](k8s/security/exceptions/redis-chown.yaml)) que solo permite ese pod:
+**Redis en `CrashLoopBackOff` con `Permission denied` sobre `appendonly.aof`.** Pasa si el PVC de Redis (`shape-game-redis-data`) contiene datos de una versión anterior del proyecto, en la que Redis corría como root. Para pasarle los archivos al usuario `redis` hace falta un pod que corra como root. Como Kyverno lo bloquea, primero se aplica una excepción puntual ([`k8s/security/exceptions/redis-chown.yaml`](k8s/security/exceptions/redis-chown.yaml)) que solo permite ese pod:
 
 ```bash
 kubectl apply -f k8s/security/exceptions/redis-chown.yaml
-kubectl scale deploy/redis --replicas=0
-kubectl run redis-chown --rm -i --restart=Never --image=shape-redis:1.0.0 --overrides='{"spec":{"securityContext":{"runAsUser":0},"containers":[{"name":"c","image":"shape-redis:1.0.0","command":["chown","-R","999:1000","/data"],"resources":{"requests":{"cpu":"10m","memory":"16Mi"},"limits":{"cpu":"100m","memory":"64Mi"}},"volumeMounts":[{"name":"d","mountPath":"/data"}]}],"volumes":[{"name":"d","persistentVolumeClaim":{"claimName":"redis-pvc"}}]}}'
-kubectl scale deploy/redis --replicas=1
+kubectl scale deploy/shape-game-redis --replicas=0
+kubectl run redis-chown --rm -i --restart=Never --image=shape-redis:1.0.0 --overrides='{"spec":{"securityContext":{"runAsUser":0},"containers":[{"name":"c","image":"shape-redis:1.0.0","command":["chown","-R","999:1000","/data"],"resources":{"requests":{"cpu":"10m","memory":"16Mi"},"limits":{"cpu":"100m","memory":"64Mi"}},"volumeMounts":[{"name":"d","mountPath":"/data"}]}],"volumes":[{"name":"d","persistentVolumeClaim":{"claimName":"shape-game-redis-data"}}]}}'
+kubectl scale deploy/shape-game-redis --replicas=1
 kubectl delete -f k8s/security/exceptions/redis-chown.yaml
 ```
 
-Otra opción, si no importa perder las partidas guardadas, es borrar el PVC con `kubectl delete pvc redis-pvc` y volver a ejecutar `deploy`.
+Otra opción, si no importa perder las partidas guardadas, es borrar el PVC con `kubectl delete pvc shape-game-redis-data` (con la release desinstalada) y volver a ejecutar `deploy`.
 
 **Prometheus no muestra los pods de la app en *Targets*.** Verificá que los pods tengan la anotación `prometheus.io/scrape: "true"` con `kubectl get pod -l app=shape-game -o yaml | grep prometheus.io`. Si se cambió `k8s/monitoring/prometheus.yaml`, volvé a ejecutar `deploy-monitoring`, que recarga la configuración.
 

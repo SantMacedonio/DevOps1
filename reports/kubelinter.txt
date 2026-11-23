@@ -1,8 +1,8 @@
 # KubeLinter v0.8.3
-# Fecha: 2026-11-23 18:13:52 UTC
-# Comando: kube-linter lint --ignore-paths 'k8s/security/tests/**' k8s/
+# Fecha: 2026-11-23 19:07:24 UTC
+# Comando: kube-linter lint --ignore-paths 'k8s/security/tests/**' k8s/ helm-chart/
 
-## 1. Manifiestos del proyecto (checks por defecto)
+## 1. Manifiestos del proyecto y Helm Chart (checks por defecto)
 KubeLinter 0.8.3
 
 No lint errors found!

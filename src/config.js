@@ -6,6 +6,9 @@ const config = {
   prestigeEnabled: process.env.PRESTIGE_ENABLED === 'true' || (process.env.APP_COLOR || 'blue').toLowerCase() === 'green',
   
   redis: {
+    // REDIS_ENABLED=false: no conectarse a Redis (modo memoria). Lo usan los
+    // tests, para no depender de un Redis ni quedar reintentando la conexión.
+    enabled: process.env.REDIS_ENABLED !== 'false',
     host: process.env.REDIS_HOST || '127.0.0.1',
     port: parseInt(process.env.REDIS_PORT, 10) || 6379,
     password: process.env.REDIS_PASSWORD || undefined,

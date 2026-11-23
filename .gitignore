@@ -39,3 +39,15 @@ desktop.ini
 .eslintcache
 tmp/
 temp/
+
+# Resultados de tests generados en CI
+reports/tests/
+
+# Jenkins: credenciales locales y kubeconfig generado (no se suben)
+.jenkins/
+!.env.jenkins.example
+reports/ci/
+
+# Documentos de resumen: solo locales, no se versionan
+RESUMEN.md
+TECNOLOGIAS.md

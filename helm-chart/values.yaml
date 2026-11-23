@@ -20,6 +20,11 @@ app:
   image:
     pullPolicy: IfNotPresent
 
+  # Secrets para descargar imágenes de un registry privado (ej: ghcr.io).
+  # Se crean aparte: kubectl create secret docker-registry ghcr-pull ...
+  # Ejemplo: imagePullSecrets: [{ name: ghcr-pull }]
+  imagePullSecrets: []
+
   # Una entrada por color. Cada versión habilitada genera su propio Deployment.
   versions:
     blue:

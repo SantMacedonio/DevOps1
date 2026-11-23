@@ -1,0 +1,93 @@
+# =============================================================================
+# Identidad de Jenkins dentro del cluster (principio de mínimo privilegio).
+# Jenkins NO usa el kubeconfig de administrador: usa esta ServiceAccount, que
+# solo puede operar en los namespaces de la app ("default" = prod y
+# "shape-dev" = dev). No tiene acceso a monitoring, kyverno, falco ni
+# kube-system, y lo que despliega lo sigue validando Kyverno.
+# scripts/jenkins-up genera un kubeconfig a partir de su token.
+# =============================================================================
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: jenkins-ci
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: shape-dev
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: jenkins-deployer
+  namespace: jenkins-ci
+# El token de la ServiceAccount no se monta en ningún pod: solo se usa desde
+# el kubeconfig de Jenkins
+automountServiceAccountToken: false
+---
+# Token de larga duración para el kubeconfig de Jenkins
+apiVersion: v1
+kind: Secret
+metadata:
+  name: jenkins-deployer-token
+  namespace: jenkins-ci
+  annotations:
+    kubernetes.io/service-account.name: jenkins-deployer
+type: kubernetes.io/service-account-token
+---
+# Lo que necesita Helm para instalar/actualizar la Chart, correr "helm test"
+# y el smoke test (kubectl exec) del pipeline
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: shape-game-deployer
+rules:
+  # Recursos de la Chart. "secrets": Helm guarda ahí el historial de releases
+  - apiGroups: [""]
+    resources: [configmaps, secrets, services, persistentvolumeclaims, pods]
+    verbs: [get, list, watch, create, update, patch, delete]
+  - apiGroups: [""]
+    resources: [pods/log, events]
+    verbs: [get, list, watch]
+  - apiGroups: [""]
+    resources: [pods/exec]
+    verbs: [create]
+  - apiGroups: [apps]
+    resources: [deployments]
+    verbs: [get, list, watch, create, update, patch, delete]
+  - apiGroups: [apps]
+    resources: [replicasets]
+    verbs: [get, list, watch]
+  - apiGroups: [networking.k8s.io]
+    resources: [ingresses]
+    verbs: [get, list, watch, create, update, patch, delete]
+---
+# El ClusterRole solo define permisos; los RoleBinding los otorgan
+# ÚNICAMENTE dentro de cada namespace de la app
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: jenkins-deployer
+  namespace: default
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: shape-game-deployer
+subjects:
+  - kind: ServiceAccount
+    name: jenkins-deployer
+    namespace: jenkins-ci
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: jenkins-deployer
+  namespace: shape-dev
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: shape-game-deployer
+subjects:
+  - kind: ServiceAccount
+    name: jenkins-deployer
+    namespace: jenkins-ci

@@ -1,12 +1,12 @@
-Validacion de politicas Kyverno
-Fecha:   2026-11-23 17:50:57 UTC
+Validación de políticas Kyverno
+Fecha:   2026-11-23 19:07:39 UTC
 Kyverno: reg.kyverno.io/kyverno/kyverno:v1.20.0
 
-Politicas activas:
+Políticas activas:
 NAME                      AGE   READY
-disallow-latest-tag       13m   true
-require-non-root          13m   true
-require-requests-limits   13m   true
+disallow-latest-tag       90m   true
+require-non-root          90m   true
+require-requests-limits   90m   true
 
 ------------------------------------------------------------
 Manifiesto: k8s/security/tests/01-latest-tag.yaml

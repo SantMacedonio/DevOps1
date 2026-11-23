@@ -1,5 +1,5 @@
 # Trivy (vulnerabilidades y secretos)
-# Fecha: 2026-11-23 18:13:43 UTC
+# Fecha: 2026-11-23 19:06:47 UTC
 # Comando: trivy image --scanners vuln,secret <imagen>
 
 ############################################################
