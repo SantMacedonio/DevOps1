@@ -108,6 +108,22 @@ describe('API del juego', () => {
     assert.equal((await post('/api/prestige', { playerId: player })).status, 403);
   });
 
+  // Compatibilidad de datos entre versiones: blue y green comparten Redis. Si se
+  // vuelve atrás a una versión sin prestigio, no puede borrar lo que el jugador
+  // consiguió en la otra; solo no lo usa.
+  test('Blue conserva las torretas de una partida jugada en Green (rollback sin pérdida de datos)', async () => {
+    const id = 'turret_player_1';
+    const greenState = { points: 50, upgrades: { autoTurret: 3 }, prestige: { shards: 5 } };
+    assert.equal((await post('/api/save', { playerId: id, state: greenState })).status, 200);
+    // El jugador sigue jugando en Blue: lee su partida y la vuelve a guardar
+    const { state } = await (await get(`/api/state/${id}`)).json();
+    assert.equal((await post('/api/save', { playerId: id, state })).status, 200);
+    const after = (await (await get(`/api/state/${id}`)).json()).state;
+    assert.equal(after.upgrades.autoTurret, 3);          // no se borraron
+    assert.equal(after.prestige.shards, 5);
+    assert.equal(after.prestige.globalMultiplier, 1.0);  // pero Blue no las aplica
+  });
+
   test('rechaza bodies de más de 100 KB (413)', async () => {
     const big = JSON.stringify({ playerId: player, state: { x: 'a'.repeat(200 * 1024) } });
     assert.equal((await post('/api/save', big)).status, 413);

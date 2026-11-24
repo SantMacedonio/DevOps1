@@ -404,12 +404,14 @@ El [`Jenkinsfile`](Jenkinsfile) automatiza todo el camino desde un commit hasta 
 ```
  1. Checkout ─► 2. Seguridad del código ─────────► 3. Build y tests ─► 4. Imagen Docker ──────► 5. Deploy con Helm
     git clone      Semgrep (SAST)    ┐ en             npm ci              docker build             color inactivo ← imagen nueva
-    tag de la      Snyk (dependencias)┘ paralelo      26 tests (JUnit)    Trivy (corta si CRITICAL)  smoke test de ese color
+    tag de la      Snyk (dependencias)┘ paralelo      27 tests (JUnit)    Trivy (corta si CRITICAL)  smoke test de ese color
     imagen                                                                minikube o ghcr.io       switch del tráfico
                                                                                                     helm test (rollback si falla)
 ```
 
 **Blue/Green en el pipeline:** la imagen nueva siempre va al color que **no** recibe tráfico. Se prueba ahí y recién después se le pasa el tráfico, así que los colores se alternan en cada despliegue (blue → green → blue…). El color activo no se toca durante todo el proceso: sigue atendiendo a los jugadores y es la versión a la que se vuelve si algo falla. En el pipeline, el color es solo una "ranura": la versión nueva usa el tag de la imagen como versión y tiene el prestigio activado, caiga en blue o en green. La tabla de [diferencias entre versiones](#diferencias-entre-versiones-blue-vs-green) describe la demo manual con `shape-game:v1` y `v2`.
+
+**Compatibilidad de datos:** las dos versiones comparten Redis, así que cada una tiene que poder leer lo que escribe la otra **sin borrar lo que no usa**. Si no, volver atrás le haría perder datos a los jugadores. Por eso la versión sin prestigio conserva las torretas y los fragmentos aunque no los aplique (hay un test que lo verifica). Los cambios que rompen el formato de los datos se hacen en varios despliegues (*expand / contract*), para que nunca convivan dos versiones que no se entiendan.
 
 Cada etapa escribe su propio log en Jenkins y sus reportes se archivan con el build (`reports/ci/`: `semgrep-report.txt`, `snyk.json`, `trivy.txt`; `reports/tests/junit.xml`). La imagen se etiqueta `versión-rama-build-commit` (por ejemplo `shape-game:1.0.0-main-3-cda567c`): nunca `latest`, y siempre se sabe de qué rama y de qué commit salió.
 
@@ -723,6 +725,7 @@ Los más relevantes, agrupados por área. Cada uno se resolvió y se verificó e
 | El pipeline siempre desplegaba en green, **aunque green fuera el color activo** | Desplegar siempre en el color inactivo, probarlo y recién después cambiar el tráfico | — |
 | Cualquier commit, incluso de documentación, **llegaba solo a producción** | Job Multibranch: la rama decide el entorno. `feature/*` va a dev y solo `main` (después de un Pull Request) va a prod | Aprobación manual (`input`) en cada build |
 | El primer *push* a ghcr.io creó un paquete **privado** y Kubernetes no podía descargarlo | Se revisó que la imagen no tuviera secretos y se hizo público. Además, el pipeline se detiene si Trivy encuentra cualquier secreto, y el login a ghcr.io se borra al terminar | Paquete privado con `imagePullSecrets` |
+| **Volver atrás borraba datos:** la versión sin prestigio ponía las torretas en 0 al leer una partida, y al guardarla las perdía para siempre. Como blue y green comparten Redis, un rollback a esa versión le borraba las torretas a quien las había comprado en la otra | La versión sin prestigio conserva las torretas y solo no las usa (*tolerant reader*). Hay un test que guarda en blue una partida jugada en green y verifica que no se pierde nada | Migraciones de datos por versión |
 | El smoke test probaba un pod viejo que se estaba apagando y disparaba el rollback | Descartar los pods con `deletionTimestamp` | Probar solo después de `kubectl rollout status` |
 | En Git Bash, `MSYS_NO_PATHCONV=1` aplicado a todo un script rompía `curl -o /dev/null` y la espera no terminaba | Aplicarlo solo al `docker run` que lo necesita | Usar solo PowerShell o WSL |
 

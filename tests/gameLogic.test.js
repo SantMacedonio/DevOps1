@@ -72,10 +72,11 @@ describe('sanitizeState', () => {
     assert.equal(s.upgrades.clickDamage, 4);
   });
 
-  test('en Blue (sin prestigio) quita las torretas y no aplica el multiplicador', () => {
+  test('en Blue (sin prestigio) conserva las torretas y los fragmentos, pero no aplica el multiplicador', () => {
     const raw = { upgrades: { autoTurret: 3 }, prestige: { shards: 5 } };
     const s = gameLogic.sanitizeState(raw, 'user_test_5', false);
-    assert.equal(s.upgrades.autoTurret, 0);
+    assert.equal(s.upgrades.autoTurret, 3);   // no se borran (compatibilidad al volver atrás)
+    assert.equal(s.prestige.shards, 5);
     assert.equal(s.prestige.globalMultiplier, 1.0);
   });
 
