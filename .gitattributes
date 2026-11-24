@@ -3,3 +3,8 @@
 Dockerfile text eol=lf
 *.conf text eol=lf
 *.ps1 text eol=crlf
+# El chart de Helm siempre en LF: las anotaciones checksum/config son el hash del
+# ConfigMap renderizado, y con CRLF (copia de Windows) el hash cambia aunque la
+# configuración sea la misma. Eso reiniciaba todos los pods (incluido Redis)
+# al alternar entre un despliegue local y uno de Jenkins (que usa LF).
+helm-chart/** text eol=lf
