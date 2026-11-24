@@ -57,11 +57,21 @@ jobs:
         logRotator {
           numToKeep(20)
         }
-        // Los mismos parámetros que declara el Jenkinsfile. Sin esto, cada vez
-        // que Jenkins se reinicia el job se regenera sin parámetros y el primer
-        // build no ofrece "Build with Parameters".
+        // Los mismos parámetros y el mismo disparador que declara el Jenkinsfile.
+        // Sin esto, cada vez que Jenkins se reinicia el job se regenera vacío:
+        // el primer build no ofrece "Build with Parameters" y el polling no
+        // funciona hasta que alguien lance un build a mano.
+        properties {
+          pipelineTriggers {
+            triggers {
+              pollSCM {
+                scmpoll_spec('H/5 * * * *')
+              }
+            }
+          }
+        }
         parameters {
-          choiceParam('DEPLOY_ENV', ['prod', 'dev'], 'prod: release "shape-game" (namespace default, Blue/Green). dev: release "shape-game-dev" (namespace shape-dev).')
+          choiceParam('DEPLOY_ENV', ['dev', 'prod'], 'dev (por defecto, y el que usan los builds automáticos): release "shape-game-dev" (namespace shape-dev). prod: release "shape-game" (namespace default, Blue/Green); se elige a mano.')
           booleanParam('PUBLISH_IMAGE', false, 'true: publica la imagen en ghcr.io (credencial "ghcr"). false: la carga directo en minikube, sin registry.')
           booleanParam('SWITCH_TRAFFIC', true, 'Solo prod: pasar el tráfico al color nuevo (el que estaba inactivo) después del smoke test.')
         }

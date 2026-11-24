@@ -22,8 +22,8 @@ pipeline {
     }
 
     parameters {
-        choice(name: 'DEPLOY_ENV', choices: ['prod', 'dev'],
-               description: 'prod: release "shape-game" (namespace default, Blue/Green). dev: release "shape-game-dev" (namespace shape-dev).')
+        choice(name: 'DEPLOY_ENV', choices: ['dev', 'prod'],
+               description: 'dev (por defecto, y el que usan los builds automáticos): release "shape-game-dev" (namespace shape-dev). prod: release "shape-game" (namespace default, Blue/Green); se elige a mano.')
         booleanParam(name: 'PUBLISH_IMAGE', defaultValue: false,
                description: 'true: publica la imagen en ghcr.io (credencial "ghcr"). false: la carga directo en minikube, sin registry.')
         booleanParam(name: 'SWITCH_TRAFFIC', defaultValue: true,
@@ -31,7 +31,8 @@ pipeline {
     }
 
     triggers {
-        // GitHub no puede avisarle a un Jenkins local (sin webhook): se revisa el repo cada 5 min
+        // GitHub no puede avisarle a un Jenkins local (sin webhook): se revisa el repo cada 5 min.
+        // Los builds automáticos usan los valores por defecto: despliegan en DEV, nunca en prod.
         pollSCM('H/5 * * * *')
     }
 

@@ -427,11 +427,13 @@ Jenkins corre en un contenedor (`shape-jenkins`) armado con [`jenkins/Dockerfile
 
 | Parámetro | Valores | Qué hace |
 | :--- | :--- | :--- |
-| `DEPLOY_ENV` | `prod` *(default)* / `dev` | `prod`: release `shape-game` en `default`, con Blue/Green. `dev`: release `shape-game-dev` en `shape-dev`, con la imagen nueva en los dos colores |
+| `DEPLOY_ENV` | `dev` *(default)* / `prod` | `dev`: release `shape-game-dev` en `shape-dev`, con la imagen nueva en los dos colores. `prod`: release `shape-game` en `default`, con Blue/Green; se elige a mano |
 | `SWITCH_TRAFFIC` | `true` *(default)* / `false` | Solo en prod: pasar el tráfico al color nuevo después del smoke test. Con `false`, la versión nueva queda desplegada pero sin tráfico |
 | `PUBLISH_IMAGE` | `false` *(default)* / `true` | `false`: la imagen se carga directo en Minikube. `true`: se publica en `ghcr.io/santmacedonio/shape-game` (requiere `GHCR_USER` y `GHCR_TOKEN` en `.env.jenkins`) |
 
 Además del botón, el job revisa el repositorio cada 5 minutos (`pollSCM`) y corre solo si hay commits nuevos. Se usa *polling* porque GitHub no puede enviarle un webhook a un Jenkins que corre en una máquina local.
+
+**Los builds automáticos despliegan en dev, nunca en prod** (*Continuous Delivery*). Cada commit pasa por todos los controles y queda funcionando en dev. A prod llega solo cuando alguien lanza el pipeline con `DEPLOY_ENV=prod`. Así, ningún cambio llega a los jugadores sin una decisión explícita. Para pausar también los despliegues en dev, se usa *Disable Project* en el job.
 
 Para detenerlo: `.\scripts\jenkins-down.ps1`. Con `-Purge` (o `--purge`) también se borran su historial y sus permisos en Kubernetes.
 
@@ -449,6 +451,7 @@ Para detenerlo: `.\scripts\jenkins-down.ps1`. Con `-Purge` (o `--purge`) tambié
 | [#2](reports/jenkins/build-2-detenido-por-snyk.txt) | ⛔ detenido en Snyk | Rama de prueba con `node-serialize@0.0.4` (ejecución remota de código, severidad *critical*): las etapas 3 a 5 no se ejecutan |
 | [#3](reports/jenkins/build-3-rollback-automatico.txt) | ⛔ rollback en dev | El smoke test probó un pod viejo que se estaba apagando (error del script, ya corregido). Muestra el `helm rollback` automático: dev volvió a la revisión anterior sin quedar roto |
 | [#4](reports/jenkins/build-4-exito-dev.txt) | ✅ dev, 1 min 5 s | El mismo despliegue en dev, con la corrección |
+| [#6](reports/jenkins/build-6-alternancia-prod.txt) | ✅ prod, 1 min 8 s | Blue/Green alternado: con blue activo, la versión nueva va a green, se prueba y recién después recibe el tráfico. Blue conserva la versión anterior para volver atrás |
 
 ### Simplificaciones respecto de un entorno real
 
