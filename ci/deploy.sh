@@ -61,7 +61,12 @@ log "Smoke test de los pods green"
 DEPLOY="$RELEASE-green"
 IMAGE_NOW=$(kubectl get deploy "$DEPLOY" -n "$NS" -o jsonpath='{.spec.template.spec.containers[0].image}')
 [ "$IMAGE_NOW" == "$IMAGE_REPO:$IMAGE_TAG" ] || { echo "El Deployment usa $IMAGE_NOW y se esperaba $IMAGE_REPO:$IMAGE_TAG"; false; }
-for POD in $(kubectl get pods -n "$NS" -l "app.kubernetes.io/instance=$RELEASE,version=green" --field-selector=status.phase=Running -o jsonpath='{.items[*].metadata.name}'); do
+# Solo los pods nuevos: los de la versión anterior pueden seguir en "Terminating"
+# (que figura como phase=Running), así que se descartan los que tienen deletionTimestamp.
+GREEN_PODS=$(kubectl get pods -n "$NS" -l "app.kubernetes.io/instance=$RELEASE,version=green" --field-selector=status.phase=Running \
+    -o go-template='{{range .items}}{{if not .metadata.deletionTimestamp}}{{.metadata.name}} {{end}}{{end}}')
+[ -n "$GREEN_PODS" ] || { echo "No hay pods green en ejecución"; false; }
+for POD in $GREEN_PODS; do
     OK=""
     for i in $(seq 1 15); do
         RESP=$(kubectl exec -n "$NS" "$POD" -- wget -qO- http://localhost:3000/readyz 2> /dev/null || true)

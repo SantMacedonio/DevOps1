@@ -57,6 +57,14 @@ jobs:
         logRotator {
           numToKeep(20)
         }
+        // Los mismos parámetros que declara el Jenkinsfile. Sin esto, cada vez
+        // que Jenkins se reinicia el job se regenera sin parámetros y el primer
+        // build no ofrece "Build with Parameters".
+        parameters {
+          choiceParam('DEPLOY_ENV', ['prod', 'dev'], 'prod: release "shape-game" (namespace default, Blue/Green). dev: release "shape-game-dev" (namespace shape-dev).')
+          booleanParam('PUBLISH_IMAGE', false, 'true: publica la imagen en ghcr.io (credencial "ghcr"). false: la carga directo en minikube, sin registry.')
+          booleanParam('SWITCH_TRAFFIC', true, 'Solo prod: pasar el tráfico a green después del smoke test.')
+        }
         definition {
           cpsScm {
             scm {

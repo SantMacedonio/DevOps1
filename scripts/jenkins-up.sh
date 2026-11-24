@@ -7,7 +7,6 @@
 # Jenkins queda en http://localhost:8080 (usuario admin).
 set -euo pipefail
 cd "$(dirname "$0")/.."
-export MSYS_NO_PATHCONV=1
 
 IMAGE=shape-jenkins:1.0.0
 CONTAINER=shape-jenkins
@@ -70,7 +69,10 @@ docker rm -f "$CONTAINER" > /dev/null 2>&1 || true
 # docker.sock        : para construir imágenes con el Docker del host
 # --group-add 0      : el socket es root:root 660; Jenkins sigue siendo uid 1000
 # /repo (solo lectura): repositorio local que clona el pipeline
-docker run -d --name "$CONTAINER" \
+# MSYS_NO_PATHCONV=1 solo acá: evita que Git Bash (Windows) convierta las rutas
+# del contenedor (/repo, /var/run/docker.sock) en rutas de Windows. No se
+# exporta para todo el script porque rompería "curl -o /dev/null".
+MSYS_NO_PATHCONV=1 docker run -d --name "$CONTAINER" \
     --network minikube \
     -p 8080:8080 \
     --memory 1500m \
