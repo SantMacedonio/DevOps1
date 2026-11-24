@@ -52,41 +52,47 @@ credentials:
 
 jobs:
   - script: |
-      pipelineJob('shape-game') {
-        description('Pipeline CI/CD de Shape Popper: Semgrep, Snyk, tests, imagen Docker (Trivy) y despliegue con Helm. Definido en el Jenkinsfile del repositorio.')
-        logRotator {
-          numToKeep(20)
-        }
-        // Los mismos parámetros y el mismo disparador que declara el Jenkinsfile.
-        // Sin esto, cada vez que Jenkins se reinicia el job se regenera vacío:
-        // el primer build no ofrece "Build with Parameters" y el polling no
-        // funciona hasta que alguien lance un build a mano.
-        properties {
-          pipelineTriggers {
-            triggers {
-              pollSCM {
-                scmpoll_spec('H/5 * * * *')
+      // Multibranch: Jenkins descubre solo las ramas del repositorio y crea un
+      // sub-job por cada una que tenga Jenkinsfile. La rama decide el entorno
+      // (ver Jenkinsfile): main -> prod (y publica en ghcr.io), feature/* -> dev.
+      // Los parámetros los declara el Jenkinsfile de cada rama.
+      multibranchPipelineJob('shape-game') {
+        displayName('shape-game')
+        description('Pipeline CI/CD de Shape Popper: Semgrep, Snyk, tests, imagen Docker (Trivy) y despliegue con Helm. main despliega en prod y feature/* en dev.')
+        branchSources {
+          branchSource {
+            source {
+              git {
+                id('shape-game-repo')
+                remote('${REPO_URL}')
+                traits {
+                  gitBranchDiscovery()
+                  // Solo estas ramas: el resto no se construye
+                  headWildcardFilter {
+                    includes('main feature/*')
+                    excludes('')
+                  }
+                }
               }
             }
           }
         }
-        parameters {
-          choiceParam('DEPLOY_ENV', ['dev', 'prod'], 'dev (por defecto, y el que usan los builds automáticos): release "shape-game-dev" (namespace shape-dev). prod: release "shape-game" (namespace default, Blue/Green); se elige a mano.')
-          booleanParam('PUBLISH_IMAGE', false, 'true: publica la imagen en ghcr.io (credencial "ghcr"). false: la carga directo en minikube, sin registry.')
-          booleanParam('SWITCH_TRAFFIC', true, 'Solo prod: pasar el tráfico al color nuevo (el que estaba inactivo) después del smoke test.')
+        // Revisa el repositorio cada 5 minutos: si una rama tiene commits nuevos,
+        // lanza su build (GitHub no puede mandarle un webhook a un Jenkins local)
+        triggers {
+          periodicFolderTrigger {
+            interval('5m')
+          }
         }
-        definition {
-          cpsScm {
-            scm {
-              git {
-                remote {
-                  url('${REPO_URL}')
-                }
-                branch('${REPO_BRANCH}')
-              }
-            }
+        // Cuando una rama se borra en el repositorio, su sub-job se elimina
+        orphanedItemStrategy {
+          discardOldItems {
+            numToKeep(0)
+          }
+        }
+        factory {
+          workflowBranchProjectFactory {
             scriptPath('Jenkinsfile')
-            lightweight(false)
           }
         }
       }

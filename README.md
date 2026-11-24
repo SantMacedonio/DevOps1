@@ -251,7 +251,12 @@ Los resultados y su análisis están en [Seguridad](#5-seguridad-devsecops).
 
 ### Paso 6: correr el pipeline
 
-Con Jenkins levantado (`setup --all` o `jenkins-up`), entrar a <http://localhost:8080>. El detalle está en [Pipeline CI/CD](#3-pipeline-cicd-jenkins).
+Con Jenkins levantado (`setup --all` o `jenkins-up`), el pipeline corre solo:
+
+1. Un `git push` a una rama `feature/...` dispara su build en hasta 5 minutos: análisis, tests, imagen y despliegue en **dev**.
+2. Un Pull Request de esa rama a `main`, una vez mezclado, dispara el build de `main`: publica la imagen en ghcr.io y despliega en **prod** con Blue/Green.
+
+Los builds se siguen en <http://localhost:8080> (usuario `admin`). El detalle está en [Pipeline CI/CD](#3-pipeline-cicd-jenkins).
 
 ### Paso 7: borrar todo
 
@@ -394,7 +399,7 @@ El namespace `ingress-nginx` está excluido de las políticas de Kyverno: el add
 
 ## 3. Pipeline CI/CD (Jenkins)
 
-El [`Jenkinsfile`](Jenkinsfile) automatiza todo el camino desde un commit hasta el despliegue en Kubernetes:
+El [`Jenkinsfile`](Jenkinsfile) automatiza todo el camino desde un commit hasta el despliegue en Kubernetes. El entorno de destino lo decide la rama ([ver abajo](#ramas-y-entornos-cómo-llega-un-cambio-a-producción)):
 
 ```
  1. Checkout ─► 2. Seguridad del código ─────────► 3. Build y tests ─► 4. Imagen Docker ──────► 5. Deploy con Helm
@@ -406,7 +411,7 @@ El [`Jenkinsfile`](Jenkinsfile) automatiza todo el camino desde un commit hasta 
 
 **Blue/Green en el pipeline:** la imagen nueva siempre va al color que **no** recibe tráfico. Se prueba ahí y recién después se le pasa el tráfico, así que los colores se alternan en cada despliegue (blue → green → blue…). El color activo no se toca durante todo el proceso: sigue atendiendo a los jugadores y es la versión a la que se vuelve si algo falla. En el pipeline, el color es solo una "ranura": la versión nueva usa el tag de la imagen como versión y tiene el prestigio activado, caiga en blue o en green. La tabla de [diferencias entre versiones](#diferencias-entre-versiones-blue-vs-green) describe la demo manual con `shape-game:v1` y `v2`.
 
-Cada etapa escribe su propio log en Jenkins y sus reportes se archivan con el build (`reports/ci/`: `semgrep-report.txt`, `snyk.json`, `trivy.txt`; `reports/tests/junit.xml`). La imagen se etiqueta `versión-build-commit` (por ejemplo `shape-game:1.0.0-1-a10e070`): nunca `latest`, y siempre se sabe de qué commit salió.
+Cada etapa escribe su propio log en Jenkins y sus reportes se archivan con el build (`reports/ci/`: `semgrep-report.txt`, `snyk.json`, `trivy.txt`; `reports/tests/junit.xml`). La imagen se etiqueta `versión-rama-build-commit` (por ejemplo `shape-game:1.0.0-main-3-cda567c`): nunca `latest`, y siempre se sabe de qué rama y de qué commit salió.
 
 Extracto real del log de un build (el [#11](reports/jenkins/build-11-publicacion-ghcr.txt)):
 
@@ -436,6 +441,26 @@ Si alguna herramienta encuentra un problema crítico, el pipeline **se detiene e
 | 4 | Trivy | la imagen tiene vulnerabilidades `CRITICAL` o **cualquier secreto** (claves, tokens, contraseñas), sin importar su severidad. Se revisa antes de publicar porque el paquete de ghcr.io es público |
 | 5 | [`ci/deploy.sh`](ci/deploy.sh) | el color nuevo no responde, no se conecta a Redis o falla `helm test`. En ese caso hace además `helm rollback` a la revisión anterior |
 
+### Ramas y entornos: cómo llega un cambio a producción
+
+El job `shape-game` es un **Multibranch Pipeline**: Jenkins descubre solo las ramas del repositorio y crea un sub-job por cada una que tenga `Jenkinsfile`. **La rama decide el entorno**, así que no hay forma de mandar a prod código que no esté en `main`:
+
+```
+ rama feature/...  ── git push ──►  CI completo + despliegue en DEV (shape-dev)
+        │
+   Pull Request en GitHub (revisión del cambio)
+        ▼
+ rama main         ── merge ─────►  CI completo + imagen publicada en ghcr.io + despliegue en PROD (Blue/Green)
+```
+
+| Rama | Análisis, tests e imagen | Publica en ghcr.io | Despliega en |
+| :--- | :--- | :--- | :--- |
+| `main` | Sí | Siempre | **prod** (release `shape-game`, namespace `default`, Blue/Green) |
+| `feature/*` | Sí | Solo si se marca `PUBLISH_IMAGE` | **dev** (release `shape-game-dev`, namespace `shape-dev`) |
+| Otras | No se construyen | — | — |
+
+Jenkins revisa el repositorio cada 5 minutos y lanza el build de cada rama que tenga commits nuevos. Se usa *polling* porque GitHub no puede enviarle un webhook a un Jenkins que corre en una máquina local. **El merge a `main` es la aprobación para producción:** se hace después de revisar el Pull Request y de ver el cambio funcionando en dev. Además, la etapa de despliegue verifica la rama y se niega a desplegar en prod si no es `main`, aunque alguien edite el `Jenkinsfile` en otra rama.
+
 ### Levantar Jenkins y correr el pipeline
 
 Jenkins corre en un contenedor (`shape-jenkins`) armado con [`jenkins/Dockerfile`](jenkins/Dockerfile). La imagen trae Node.js, Docker CLI, kubectl, Helm, Trivy, Snyk y Semgrep con versiones fijas. Toda la configuración está en [`jenkins/casc.yaml`](jenkins/casc.yaml) (*Jenkins Configuration as Code*): el usuario, las credenciales y el job. No hay que configurar nada a mano en la interfaz.
@@ -444,27 +469,22 @@ Jenkins corre en un contenedor (`shape-jenkins`) armado con [`jenkins/Dockerfile
    ```powershell
    .\scripts\jenkins-up.ps1        # ./scripts/jenkins-up.sh
    ```
-2. Completar `SNYK_TOKEN=` en `.env.jenkins` (snyk.io → *Account settings* → *Auth Token*) y volver a ejecutar `jenkins-up`. Ese archivo tiene los secretos y **no se sube al repositorio**.
+2. Completar en `.env.jenkins` el token de Snyk (`SNYK_TOKEN`, de snyk.io → *Account settings* → *Auth Token*) y, para publicar en ghcr.io, `GHCR_USER` y `GHCR_TOKEN` (un token *classic* de GitHub con permiso `write:packages`). Después, volver a ejecutar `jenkins-up`. Ese archivo tiene los secretos y **no se sube al repositorio**.
 3. Entrar a <http://localhost:8080> con el usuario `admin` y la contraseña que muestra el script (también está en `.env.jenkins`).
-4. Abrir el job **shape-game** → *Build with Parameters*.
+4. En el job **shape-game** aparece una entrada por rama. Los builds se lanzan solos con cada *push*; para lanzar uno a mano: rama → *Build with Parameters*.
 
 | Parámetro | Valores | Qué hace |
 | :--- | :--- | :--- |
-| `DEPLOY_ENV` | `dev` *(default)* / `prod` | `dev`: release `shape-game-dev` en `shape-dev`, con la imagen nueva en los dos colores. `prod`: release `shape-game` en `default`, con Blue/Green; se elige a mano |
-| `SWITCH_TRAFFIC` | `true` *(default)* / `false` | Solo en prod: pasar el tráfico al color nuevo después del smoke test. Con `false`, la versión nueva queda desplegada pero sin tráfico |
-| `PUBLISH_IMAGE` | `false` *(default)* / `true` | `false`: la imagen se carga directo en Minikube. `true`: se publica en `ghcr.io/santmacedonio/shape-game` (requiere `GHCR_USER` y `GHCR_TOKEN` en `.env.jenkins`) |
+| `SWITCH_TRAFFIC` | `true` *(default)* / `false` | Solo en `main` (prod): pasar el tráfico al color nuevo después del smoke test. Con `false`, la versión nueva queda desplegada pero sin tráfico |
+| `PUBLISH_IMAGE` | `false` *(default)* / `true` | Solo en `feature/*`: publicar también la imagen en `ghcr.io/santmacedonio/shape-game`. En `main` siempre se publica |
 
-Además del botón, el job revisa el repositorio cada 5 minutos (`pollSCM`) y corre solo si hay commits nuevos. Se usa *polling* porque GitHub no puede enviarle un webhook a un Jenkins que corre en una máquina local.
-
-**Los builds automáticos despliegan en dev, nunca en prod** (*Continuous Delivery*). Cada commit pasa por todos los controles y queda funcionando en dev. A prod llega solo cuando alguien lanza el pipeline con `DEPLOY_ENV=prod`. Así, ningún cambio llega a los jugadores sin una decisión explícita. Para pausar también los despliegues en dev, se usa *Disable Project* en el job.
-
-Para detenerlo: `.\scripts\jenkins-down.ps1`. Con `-Purge` (o `--purge`) también se borran su historial y sus permisos en Kubernetes.
+Para pausar los builds automáticos de una rama, se usa *Disable Project* en su sub-job. Para detener Jenkins: `.\scripts\jenkins-down.ps1`. Con `-Purge` (o `--purge`) también se borran su historial y sus permisos en Kubernetes.
 
 ### Cómo se conecta con Docker y Kubernetes
 
-- **Docker:** el contenedor monta el socket de Docker del host para construir imágenes. Con `PUBLISH_IMAGE=true` la imagen se sube a `ghcr.io/santmacedonio/shape-game`, que es un paquete **público**, y Kubernetes la descarga de ahí sin credenciales. El login a ghcr.io dura solo lo que tarda el *push*: se guarda en una carpeta temporal y se borra al terminar. En *modo local* (`PUBLISH_IMAGE=false`, el que usan los builds automáticos), la imagen se pasa a Minikube con `docker save | ctr images import`, que es lo mismo que hace `minikube image load`.
+- **Docker:** el contenedor monta el socket de Docker del host para construir imágenes. Cuando se publica (siempre en `main`), la imagen se sube a `ghcr.io/santmacedonio/shape-game`, que es un paquete **público**, y Kubernetes la descarga de ahí sin credenciales. El login a ghcr.io dura solo lo que tarda el *push*: se guarda en una carpeta temporal y se borra al terminar. Cuando no se publica (`feature/*`), la imagen se pasa a Minikube con `docker save | ctr images import`, que es lo mismo que hace `minikube image load`.
 - **Kubernetes:** Jenkins no usa el kubeconfig de administrador. Usa la ServiceAccount `jenkins-deployer` ([`k8s/jenkins/rbac.yaml`](k8s/jenkins/rbac.yaml)), que solo puede gestionar los recursos de la app en los namespaces `default` y `shape-dev`. No puede tocar `kube-system` ni los namespaces de monitoreo, ni borrar las políticas de Kyverno.
-- **Código:** el job clona el repositorio y la rama que indican `REPO_URL` y `REPO_BRANCH` en `.env.jenkins`. Con GitHub (`REPO_URL=https://github.com/SantMacedonio/DevOps1.git`), Jenkins **solo ve lo que tiene *push***. Sin GitHub se puede usar el repositorio local, montado en `/repo` (`REPO_URL=file:///repo`): en ese caso ve lo que tiene commit, aunque no tenga push.
+- **Código:** el job lee el repositorio de `REPO_URL` en `.env.jenkins`. Con GitHub (`https://github.com/SantMacedonio/DevOps1.git`), Jenkins **solo ve lo que tiene *push***. Sin GitHub se puede usar el repositorio local montado en `/repo` (`REPO_URL=file:///repo`): en ese caso ve lo que tiene commit, aunque no tenga push.
 
 ### Evidencia ([`reports/jenkins/`](reports/jenkins/))
 
@@ -482,7 +502,7 @@ Para detenerlo: `.\scripts\jenkins-down.ps1`. Con `-Purge` (o `--purge`) tambié
 
 - Los builds corren en el propio controlador de Jenkins. En una empresa se usarían agentes separados, por ejemplo pods efímeros con el plugin de Kubernetes.
 - Montar el socket de Docker le da a Jenkins control total del Docker del host. Las alternativas más seguras son Kaniko, BuildKit *rootless* o un agente dedicado.
-- El despliegue de prod es automático. En un entorno real suele llevar una aprobación manual (`input`) o pasar antes por un entorno de staging.
+- A prod se llega con el merge a `main`, sin otra aprobación. En una empresa suele haber además un entorno de *staging* y reglas en GitHub que exigen revisión y el pipeline en verde antes de permitir el merge (*branch protection*).
 
 ---
 
@@ -701,7 +721,7 @@ Los más relevantes, agrupados por área. Cada uno se resolvió y se verificó e
 | Problema | Solución | Alternativa descartada |
 | :--- | :--- | :--- |
 | El pipeline siempre desplegaba en green, **aunque green fuera el color activo** | Desplegar siempre en el color inactivo, probarlo y recién después cambiar el tráfico | — |
-| Cualquier commit, incluso de documentación, **llegaba solo a producción** | Los builds automáticos despliegan en dev; prod requiere una decisión explícita | Aprobación manual (`input`) en cada build |
+| Cualquier commit, incluso de documentación, **llegaba solo a producción** | Job Multibranch: la rama decide el entorno. `feature/*` va a dev y solo `main` (después de un Pull Request) va a prod | Aprobación manual (`input`) en cada build |
 | El primer *push* a ghcr.io creó un paquete **privado** y Kubernetes no podía descargarlo | Se revisó que la imagen no tuviera secretos y se hizo público. Además, el pipeline se detiene si Trivy encuentra cualquier secreto, y el login a ghcr.io se borra al terminar | Paquete privado con `imagePullSecrets` |
 | El smoke test probaba un pod viejo que se estaba apagando y disparaba el rollback | Descartar los pods con `deletionTimestamp` | Probar solo después de `kubectl rollout status` |
 | En Git Bash, `MSYS_NO_PATHCONV=1` aplicado a todo un script rompía `curl -o /dev/null` y la espera no terminaba | Aplicarlo solo al `docker run` que lo necesita | Usar solo PowerShell o WSL |

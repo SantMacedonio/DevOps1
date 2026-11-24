@@ -8,6 +8,12 @@
 // Si Semgrep, Snyk o Trivy encuentran problemas críticos, el pipeline se
 // detiene en esa etapa, informa el motivo y no construye ni despliega nada.
 // Las herramientas vienen instaladas en la imagen de Jenkins (jenkins/Dockerfile).
+//
+// La RAMA decide el entorno (job Multibranch, ver jenkins/casc.yaml):
+//   main       -> publica la imagen en ghcr.io y despliega en PROD (Blue/Green)
+//   feature/*  -> despliega en DEV (la imagen se carga directo en minikube)
+//   otra rama  -> solo análisis, tests e imagen; no despliega
+// Así, a prod solo llega código que pasó por un Pull Request a main.
 // =============================================================================
 pipeline {
     agent any
@@ -21,19 +27,13 @@ pipeline {
         buildDiscarder(logRotator(numToKeepStr: '20'))
     }
 
+    // No hay parámetro de entorno: lo decide la rama. Los builds automáticos
+    // los lanza el job Multibranch al detectar commits nuevos (cada 5 minutos).
     parameters {
-        choice(name: 'DEPLOY_ENV', choices: ['dev', 'prod'],
-               description: 'dev (por defecto, y el que usan los builds automáticos): release "shape-game-dev" (namespace shape-dev). prod: release "shape-game" (namespace default, Blue/Green); se elige a mano.')
         booleanParam(name: 'PUBLISH_IMAGE', defaultValue: false,
-               description: 'true: publica la imagen en ghcr.io (credencial "ghcr"). false: la carga directo en minikube, sin registry.')
+               description: 'Solo ramas feature/*: publicar también la imagen en ghcr.io. En main siempre se publica.')
         booleanParam(name: 'SWITCH_TRAFFIC', defaultValue: true,
-               description: 'Solo prod: pasar el tráfico al color nuevo (el que estaba inactivo) después del smoke test.')
-    }
-
-    triggers {
-        // GitHub no puede avisarle a un Jenkins local (sin webhook): se revisa el repo cada 5 min.
-        // Los builds automáticos usan los valores por defecto: despliegan en DEV, nunca en prod.
-        pollSCM('H/5 * * * *')
+               description: 'Solo main (prod): pasar el tráfico al color nuevo (el que estaba inactivo) después del smoke test.')
     }
 
     environment {
@@ -57,10 +57,17 @@ pipeline {
                 script {
                     def shortSha = sh(returnStdout: true, script: 'git rev-parse --short HEAD').trim()
                     def version  = sh(returnStdout: true, script: "node -p \"require('./package.json').version\"").trim()
-                    // Tag inmutable y rastreable: versión-build-commit (nunca "latest")
-                    env.IMAGE_TAG  = "${version}-${env.BUILD_NUMBER}-${shortSha}"
-                    env.IMAGE_REPO = params.PUBLISH_IMAGE ? "${env.REGISTRY}/${env.APP_NAME}" : env.APP_NAME
-                    currentBuild.displayName = "#${env.BUILD_NUMBER} ${env.IMAGE_TAG} (${params.DEPLOY_ENV})"
+                    // Entorno según la rama (BRANCH_NAME lo define el job Multibranch)
+                    def branch = env.BRANCH_NAME ?: 'sin-rama'
+                    env.DEPLOY_ENV = branch == 'main' ? 'prod' : (branch.startsWith('feature/') ? 'dev' : 'ninguno')
+                    env.PUBLISH    = (branch == 'main' || params.PUBLISH_IMAGE) ? 'true' : 'false'
+                    // Tag inmutable y rastreable: versión-rama-build-commit (nunca "latest").
+                    // La rama evita que dos ramas con el mismo commit y número de build choquen.
+                    def branchLabel = branch.replaceAll('[^A-Za-z0-9]+', '-').toLowerCase().take(40)
+                    env.IMAGE_TAG  = "${version}-${branchLabel}-${env.BUILD_NUMBER}-${shortSha}"
+                    env.IMAGE_REPO = env.PUBLISH == 'true' ? "${env.REGISTRY}/${env.APP_NAME}" : env.APP_NAME
+                    currentBuild.displayName = "#${env.BUILD_NUMBER} ${shortSha} -> ${env.DEPLOY_ENV}"
+                    echo "Rama: ${branch}  ->  entorno: ${env.DEPLOY_ENV}  |  publicar en ghcr.io: ${env.PUBLISH}"
                     echo "Imagen a construir: ${env.IMAGE_REPO}:${env.IMAGE_TAG}"
                 }
             }
@@ -148,7 +155,7 @@ pipeline {
                     if (rc != 0) {
                         error('Trivy encontró SECRETOS dentro de la imagen: no se publica ni se despliega (ver el detalle arriba y reports/ci/trivy.txt).')
                     }
-                    if (params.PUBLISH_IMAGE) {
+                    if (env.PUBLISH == 'true') {
                         withCredentials([usernamePassword(credentialsId: 'ghcr', usernameVariable: 'GHCR_USER', passwordVariable: 'GHCR_TOKEN')]) {
                             // El login se guarda en una carpeta temporal del workspace (no en el
                             // home de Jenkins) y se cierra y borra al salir, aunque el push falle.
@@ -163,7 +170,7 @@ pipeline {
                     } else {
                         // Modo local: equivale a "minikube image load" (sin registry)
                         sh '''
-                            echo "PUBLISH_IMAGE=false: se carga la imagen directo en minikube (sin registry)"
+                            echo "Sin publicar: se carga la imagen directo en minikube (sin registry)"
                             docker save --platform linux/amd64 "$IMAGE_REPO:$IMAGE_TAG" | docker exec -i minikube ctr -n k8s.io images import -
                         '''
                     }
@@ -172,10 +179,19 @@ pipeline {
         }
 
         stage('5. Deploy con Helm') {
+            // Solo main y feature/* despliegan; otras ramas terminan en la etapa 4
+            when { expression { env.DEPLOY_ENV in ['prod', 'dev'] } }
             steps {
-                script { env.CURRENT_STAGE = env.STAGE_NAME }
+                script {
+                    env.CURRENT_STAGE = env.STAGE_NAME
+                    // Segunda barrera: aunque alguien edite este archivo en otra rama,
+                    // a prod solo se despliega desde main
+                    if (env.DEPLOY_ENV == 'prod' && env.BRANCH_NAME != 'main') {
+                        error("Solo la rama main puede desplegar en prod (rama actual: ${env.BRANCH_NAME}).")
+                    }
+                }
                 withCredentials([file(credentialsId: 'kubeconfig', variable: 'KUBECONFIG')]) {
-                    withEnv(["DEPLOY_ENV=${params.DEPLOY_ENV}", "SWITCH_TRAFFIC=${params.SWITCH_TRAFFIC}"]) {
+                    withEnv(["SWITCH_TRAFFIC=${params.SWITCH_TRAFFIC}"]) {
                         sh '''
                             helm version --short
                             kubectl version --client
@@ -194,7 +210,7 @@ pipeline {
             sh 'docker image rm "$IMAGE_REPO:$IMAGE_TAG" > /dev/null 2>&1 || true'
         }
         success {
-            echo "[OK] Pipeline completo: ${env.IMAGE_REPO}:${env.IMAGE_TAG} desplegada en ${params.DEPLOY_ENV}"
+            echo "[OK] Pipeline completo: ${env.IMAGE_REPO}:${env.IMAGE_TAG} lista (entorno: ${env.DEPLOY_ENV})"
         }
         failure {
             echo "[X] Pipeline DETENIDO en la etapa '${env.CURRENT_STAGE}'. Ver el log de esa etapa y los reportes archivados (reports/ci/)."
