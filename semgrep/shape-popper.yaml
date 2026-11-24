@@ -1,0 +1,57 @@
+# Reglas propias de Semgrep para Shape Popper (JavaScript / Express).
+# Se suman a los conjuntos oficiales (p/javascript, p/expressjs, ...) y cubren
+# protecciones concretas de este proyecto, para que no se pierdan en un cambio.
+#
+# Probar las reglas:  semgrep --test semgrep/
+#   (shape-popper.js tiene casos marcados con "ruleid:" = debe detectarse
+#    y "ok:" = no debe detectarse)
+rules:
+  - id: express-sin-helmet
+    languages: [javascript]
+    severity: ERROR
+    message: >-
+      La app de Express no aplica helmet: le faltan los headers de seguridad
+      (Content-Security-Policy, X-Content-Type-Options, X-Frame-Options...).
+      Agregar app.use(helmet(...)) antes de registrar las rutas.
+    metadata:
+      category: security
+      cwe: "CWE-693: Protection Mechanism Failure"
+      owasp: "A05:2021 - Security Misconfiguration"
+    patterns:
+      - pattern: const $APP = express();
+      - pattern-not-inside: |
+          const $APP = express();
+          ...
+          $APP.use(helmet(...));
+
+  - id: express-json-sin-limite
+    languages: [javascript]
+    severity: ERROR
+    message: >-
+      express.json() sin "limit": un cliente puede mandar cuerpos JSON enormes y
+      agotar la memoria del servidor (denegación de servicio). Definir un límite
+      acorde a lo que la API necesita, por ejemplo express.json({ limit: '100kb' }).
+    metadata:
+      category: security
+      cwe: "CWE-400: Uncontrolled Resource Consumption"
+      owasp: "A04:2021 - Insecure Design"
+    pattern-either:
+      - pattern: express.json()
+      - patterns:
+          - pattern: express.json({...})
+          - pattern-not: "express.json({..., limit: $LIMIT, ...})"
+
+  - id: innerhtml-con-contenido-dinamico
+    languages: [javascript]
+    severity: WARNING
+    message: >-
+      Se asigna HTML armado dinámicamente a innerHTML. Si algún valor viene del
+      usuario o del servidor sin escapar, es un XSS. Usar textContent, o escapar
+      cada valor interpolado (escapeHtml) y justificarlo.
+    metadata:
+      category: security
+      cwe: "CWE-79: Improper Neutralization of Input During Web Page Generation (XSS)"
+      owasp: "A03:2021 - Injection"
+    patterns:
+      - pattern: $EL.innerHTML = $VALUE
+      - pattern-not: $EL.innerHTML = "..."

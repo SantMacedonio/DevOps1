@@ -75,7 +75,7 @@ ingress:
 redis:
   image:
     repository: shape-redis
-    tag: 1.0.0
+    tag: 1.0.1
     pullPolicy: IfNotPresent
   port: 6379
   # Límite de memoria de Redis (debe ser menor que resources.limits.memory)

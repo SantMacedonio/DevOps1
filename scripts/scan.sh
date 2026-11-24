@@ -9,7 +9,7 @@ cd "$(dirname "$0")/.."
 
 TRIVY_VERSION=0.76.1
 DIVE_VERSION=v0.13.1
-IMAGES=("shape-game:v1" "shape-game:v2" "shape-redis:1.0.0")
+IMAGES=("shape-game:v1" "shape-game:v2" "shape-redis:1.0.1")
 OUT=reports/scans
 mkdir -p "$OUT"
 export MSYS_NO_PATHCONV=1   # Git Bash en Windows: no convertir rutas de -v

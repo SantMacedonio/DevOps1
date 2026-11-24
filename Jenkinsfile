@@ -40,7 +40,7 @@ pipeline {
         APP_NAME     = 'shape-game'
         REGISTRY     = 'ghcr.io/santmacedonio'
         REPORTS      = 'reports/ci'
-        SEMGREP_CONFIGS = '--config p/javascript --config p/nodejs --config p/expressjs --config p/xss --config p/owasp-top-ten --config p/security-audit --config p/secrets --config p/dockerfile --config p/kubernetes'
+        SEMGREP_CONFIGS = '--config p/javascript --config p/nodejs --config p/expressjs --config p/xss --config p/owasp-top-ten --config p/security-audit --config p/secrets --config p/dockerfile --config p/kubernetes --config semgrep/shape-popper.yaml'  // oficiales + reglas propias
         npm_config_cache = "${WORKSPACE}/.npm-cache"
     }
 
@@ -75,8 +75,8 @@ pipeline {
                             semgrep --version
                             semgrep scan $SEMGREP_CONFIGS --metrics=off --no-git-ignore \
                                 --exclude node_modules --exclude reports --exclude .npm-cache \
-                                --exclude k8s/security/tests \
-                                --json-output="$REPORTS/semgrep.json" --text-output="$REPORTS/semgrep.txt"
+                                --exclude k8s/security/tests --exclude semgrep/shape-popper.js \
+                                --json-output="$REPORTS/semgrep.json" --text-output="$REPORTS/semgrep-report.txt"
                         '''
                         // Corta el pipeline si hay hallazgos de severidad ERROR
                         sh 'node ci/semgrep-gate.js "$REPORTS/semgrep.json"'
@@ -125,7 +125,9 @@ pipeline {
             steps {
                 script { env.CURRENT_STAGE = env.STAGE_NAME }
                 sh '''
-                    docker build \
+                    # --pull --no-cache: siempre la base más reciente del tag y un "apk upgrade" real
+                    # (con caché, esa capa se reutiliza y la imagen queda sin los últimos parches)
+                    docker build --pull --no-cache \
                         --label org.opencontainers.image.revision="$(git rev-parse HEAD)" \
                         --label org.opencontainers.image.created="$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
                         --label org.opencontainers.image.source="https://github.com/SantMacedonio/DevOps1" \

@@ -1,27 +1,27 @@
 shape-game:v1
-  size (disk)      : 217MB
+  size (disk)      : 218MB
   size (content)   : 54 MB
   filesystem layers: 7
   trivy (OS / npm) : 0 (clean)
-  dive efficiency  : 95.9865 %
+  dive efficiency  : 96.0004 %
   dive wasted      : 12282157 bytes (12 MB)
   dive Result:PASS [Total:3] [Passed:3] [Failed:0] [Warn:0] [Skipped:0]
 
 shape-game:v2
-  size (disk)      : 217MB
+  size (disk)      : 218MB
   size (content)   : 54 MB
   filesystem layers: 7
   trivy (OS / npm) : 0 (clean)
-  dive efficiency  : 95.9865 %
+  dive efficiency  : 96.0004 %
   dive wasted      : 12282157 bytes (12 MB)
   dive Result:PASS [Total:3] [Passed:3] [Failed:0] [Warn:0] [Skipped:0]
 
-shape-redis:1.0.0
-  size (disk)      : 58.3MB
+shape-redis:1.0.1
+  size (disk)      : 57.7MB
   size (content)   : 15 MB
-  filesystem layers: 10
+  filesystem layers: 3
   trivy (OS / npm) : 0 (clean)
-  dive efficiency  : 99.2378 %
-  dive wasted      : 330015 bytes (330 kB)
+  dive efficiency  : 100.0000 %
+  dive wasted      : 0 bytes (0 B)
   dive Result:PASS [Total:3] [Passed:3] [Failed:0] [Warn:0] [Skipped:0]
 

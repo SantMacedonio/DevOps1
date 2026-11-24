@@ -1,9 +1,9 @@
 # npm audit - npm 11.12.1
-# Fecha: 2026-11-23 19:06:12 UTC
+# Fecha: 2026-11-24 14:21:44 UTC
 # Comando: npm audit
 
 found 0 vulnerabilities
 
 ## Resumen (npm audit --json)
 Vulnerabilidades: {"info":0,"low":0,"moderate":0,"high":0,"critical":0,"total":0}
-Dependencias analizadas: {"prod":83,"dev":0,"optional":0,"peer":0,"peerOptional":0,"total":82}
+Dependencias analizadas: {"prod":82,"dev":0,"optional":0,"peer":0,"peerOptional":0,"total":81}

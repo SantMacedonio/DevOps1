@@ -1,9 +1,9 @@
 # Trivy (vulnerabilidades y secretos)
-# Fecha: 2026-11-23 19:06:47 UTC
+# Fecha: 2026-11-24 14:22:29 UTC
 # Comando: trivy image --scanners vuln,secret <imagen>
 
 ############################################################
-# PARTE 1: imágenes propias (todas las severidades)
+# PARTE 1: imagenes propias (todas las severidades)
 ############################################################
 
 ==================== shape-game:v1 ====================
@@ -140,8 +140,6 @@ Report Summary
 │ app/node_modules/raw-body/package.json                   │ node-pkg │        0        │    -    │
 ├──────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
 │ app/node_modules/redis-errors/package.json               │ node-pkg │        0        │    -    │
-├──────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
-│ app/node_modules/redis-parser/package.json               │ node-pkg │        0        │    -    │
 ├──────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
 │ app/node_modules/safe-buffer/package.json                │ node-pkg │        0        │    -    │
 ├──────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
@@ -321,8 +319,6 @@ Report Summary
 ├──────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
 │ app/node_modules/redis-errors/package.json               │ node-pkg │        0        │    -    │
 ├──────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
-│ app/node_modules/redis-parser/package.json               │ node-pkg │        0        │    -    │
-├──────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
 │ app/node_modules/safe-buffer/package.json                │ node-pkg │        0        │    -    │
 ├──────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
 │ app/node_modules/safer-buffer/package.json               │ node-pkg │        0        │    -    │
@@ -366,14 +362,14 @@ Legend:
 - '0': Clean (no security findings detected)
 
 
-==================== shape-redis:1.0.0 ====================
+==================== shape-redis:1.0.1 ====================
 
 Report Summary
 
 ┌───────────────────────────────────┬────────┬─────────────────┬─────────┐
 │              Target               │  Type  │ Vulnerabilities │ Secrets │
 ├───────────────────────────────────┼────────┼─────────────────┼─────────┤
-│ shape-redis:1.0.0 (alpine 3.22.8) │ alpine │        0        │    -    │
+│ shape-redis:1.0.1 (alpine 3.22.8) │ alpine │        0        │    -    │
 └───────────────────────────────────┴────────┴─────────────────┴─────────┘
 Legend:
 - '-': Not scanned
@@ -381,7 +377,7 @@ Legend:
 
 
 ############################################################
-# PARTE 2: imágenes de terceros usadas en el cluster (HIGH/CRITICAL)
+# PARTE 2: imagenes de terceros usadas en el cluster (HIGH/CRITICAL)
 # Informativo: no se construyen en este proyecto. Ver reports/security-report.md
 ############################################################
 

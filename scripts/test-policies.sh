@@ -3,11 +3,11 @@
 # k8s/security/tests/. Los "NO CONFORME" deben ser rechazados y el conforme
 # aceptado. Se usa --dry-run=server: pasa por el webhook de Kyverno igual que
 # un apply real, pero no crea nada en el cluster.
-# Resultado: reports/kyverno-validation.txt
+# Resultado: reports/kyverno-validation.log
 set -uo pipefail
 cd "$(dirname "$0")/.."
 
-OUT=reports/kyverno-validation.txt
+OUT=reports/kyverno-validation.log
 mkdir -p reports
 FAILED=0
 

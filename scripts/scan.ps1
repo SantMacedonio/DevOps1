@@ -9,7 +9,7 @@ Set-Location (Join-Path $PSScriptRoot "..")
 
 $TrivyVersion = "0.76.1"
 $DiveVersion = "v0.13.1"
-$Images = @("shape-game:v1", "shape-game:v2", "shape-redis:1.0.0")
+$Images = @("shape-game:v1", "shape-game:v2", "shape-redis:1.0.1")
 $Out = "reports/scans"
 New-Item -ItemType Directory -Force $Out | Out-Null
 

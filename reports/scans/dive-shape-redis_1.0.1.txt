@@ -1,0 +1,16 @@
+  Using CI config: /.dive-ci
+Image Source: docker://shape-redis:1.0.1
+Extracting image from docker-engine... (this can take a while for large images)
+Analyzing image...
+  efficiency: 100.0000 %
+  wastedBytes: 0 bytes (0 B)
+  userWastedPercent: 0.0000 %
+Inefficient Files:
+Count  Wasted Space  File Path
+None
+Results:
+  PASS: highestUserWastedPercent
+  PASS: highestWastedBytes
+  PASS: lowestEfficiency
+Result:PASS [Total:3] [Passed:3] [Failed:0] [Warn:0] [Skipped:0]
+

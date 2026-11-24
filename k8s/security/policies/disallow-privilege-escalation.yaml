@@ -1,0 +1,45 @@
+# Política 4 (buena práctica elegida): impedir la escalada de privilegios.
+# Cada contenedor debe declarar securityContext.allowPrivilegeEscalation: false.
+# Con eso el kernel activa "no_new_privs": un proceso del contenedor no puede
+# ganar más privilegios que su padre (por ejemplo, con un binario setuid como
+# sudo o su). Complementa a require-non-root: aunque una imagen traiga un
+# binario setuid, no sirve para volverse root. Es uno de los controles del
+# perfil "restricted" de los Pod Security Standards de Kubernetes.
+# Kubernetes lo deja en "true" si no se declara, por eso se exige explícito.
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: disallow-privilege-escalation
+  annotations:
+    policies.kyverno.io/title: Impedir la escalada de privilegios
+    policies.kyverno.io/severity: medium
+spec:
+  validationActions: [Deny]
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: [v1]
+        operations: [CREATE, UPDATE]
+        resources: [pods]
+    namespaceSelector:
+      matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: NotIn
+          values: [kube-system, kube-public, kube-node-lease, kyverno, falco, ingress-nginx]
+  autogen:
+    podControllers:
+      controllers: [deployments, replicasets, statefulsets, daemonsets, jobs, cronjobs]
+  variables:
+    - name: containers
+      expression: >-
+        object.spec.containers +
+        (has(object.spec.initContainers) ? object.spec.initContainers : [])
+  validations:
+    - expression: >-
+        variables.containers.all(c,
+          has(c.securityContext) && has(c.securityContext.allowPrivilegeEscalation) &&
+          c.securityContext.allowPrivilegeEscalation == false)
+      message: >-
+        Todos los contenedores deben declarar securityContext.allowPrivilegeEscalation: false
+        (impide ganar privilegios con binarios setuid).

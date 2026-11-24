@@ -1,12 +1,13 @@
 Validación de políticas Kyverno
-Fecha:   2026-11-23 19:07:39 UTC
+Fecha:   2026-11-24 14:18:54 UTC
 Kyverno: reg.kyverno.io/kyverno/kyverno:v1.20.0
 
 Políticas activas:
-NAME                      AGE   READY
-disallow-latest-tag       90m   true
-require-non-root          90m   true
-require-requests-limits   90m   true
+NAME                            AGE   READY
+disallow-latest-tag             20h   true
+disallow-privilege-escalation   22s   true
+require-non-root                20h   true
+require-requests-limits         20h   true
 
 ------------------------------------------------------------
 Manifiesto: k8s/security/tests/01-latest-tag.yaml
@@ -28,3 +29,8 @@ Manifiesto: k8s/security/tests/04-compliant.yaml
 Esperado:   ACEPTADO   Resultado: ACEPTADO   [OK]
 $ kubectl apply --dry-run=server -f k8s/security/tests/04-compliant.yaml
 deployment.apps/test-compliant created (server dry run)
+------------------------------------------------------------
+Manifiesto: k8s/security/tests/05-privilege-escalation.yaml
+Esperado:   RECHAZADO   Resultado: RECHAZADO   [OK]
+$ kubectl apply --dry-run=server -f k8s/security/tests/05-privilege-escalation.yaml
+Error from server: error when creating "k8s/security/tests/05-privilege-escalation.yaml": admission webhook "vpol.validate.kyverno.svc-fail" denied the request: Policy disallow-privilege-escalation failed: Todos los contenedores deben declarar securityContext.allowPrivilegeEscalation: false (impide ganar privilegios con binarios setuid).

@@ -2,14 +2,14 @@
 # k8s/security/tests/. Los "NO CONFORME" deben ser rechazados y el conforme
 # aceptado. Se usa --dry-run=server: pasa por el webhook de Kyverno igual que
 # un apply real, pero no crea nada en el cluster.
-# Resultado: reports/kyverno-validation.txt
+# Resultado: reports/kyverno-validation.log
 # Nota: este archivo debe ser solo ASCII (PowerShell 5.1 lee los .ps1 sin BOM como ANSI).
 Set-Location (Join-Path $PSScriptRoot "..")
 $utf8 = New-Object System.Text.UTF8Encoding $false
 [Console]::OutputEncoding = $utf8
 $OutputEncoding = $utf8
 
-$out = Join-Path (Get-Location) "reports/kyverno-validation.txt"
+$out = Join-Path (Get-Location) "reports/kyverno-validation.log"
 New-Item -ItemType Directory -Force reports | Out-Null
 $failed = $false
 $lines = New-Object System.Collections.Generic.List[string]
@@ -41,8 +41,8 @@ foreach ($f in Get-ChildItem k8s/security/tests/*.yaml | Sort-Object Name) {
 [System.IO.File]::WriteAllLines($out, $lines, $utf8)
 
 if (-not $failed) {
-    Write-Host "`n[OK] All policies behave as expected -> reports/kyverno-validation.txt" -ForegroundColor Green
+    Write-Host "`n[OK] All policies behave as expected -> reports/kyverno-validation.log" -ForegroundColor Green
 } else {
-    Write-Host "`n[X] Some policies did not behave as expected -> reports/kyverno-validation.txt" -ForegroundColor Red
+    Write-Host "`n[X] Some policies did not behave as expected -> reports/kyverno-validation.log" -ForegroundColor Red
     exit 1
 }

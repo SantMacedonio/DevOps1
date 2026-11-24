@@ -17,6 +17,7 @@ spec:
           image: nginx:1.29.3-alpine
           securityContext:
             runAsUser: 0
+            allowPrivilegeEscalation: false
             readOnlyRootFilesystem: true
           resources:
             requests: { cpu: 10m, memory: 16Mi }

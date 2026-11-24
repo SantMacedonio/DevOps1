@@ -1,5 +1,5 @@
 # Instala las herramientas de seguridad del cluster:
-#   - Kyverno + 3 politicas (latest tag, requests/limits, no root)
+#   - Kyverno + 4 politicas (latest tag, requests/limits, no root, sin escalada de privilegios)
 #   - Falco (seguridad en tiempo de ejecucion) con la regla propia de Shape Popper
 # Requiere: helm, kubectl y minikube en ejecucion.
 Set-Location (Join-Path $PSScriptRoot "..")

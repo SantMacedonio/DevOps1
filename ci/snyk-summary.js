@@ -27,8 +27,27 @@ console.log('============ Snyk (dependencias npm) ============');
 console.log(`Proyecto: ${report.projectName || '-'}   Dependencias analizadas: ${report.dependencyCount ?? '-'}`);
 console.log(`Umbral de corte: critical`);
 console.log(`Vulnerabilidades: critical=${count.critical}  high=${count.high}  medium=${count.medium}  low=${count.low}`);
-for (const v of unique.values()) {
+const order = { critical: 0, high: 1, medium: 2, low: 3 };
+for (const v of [...unique.values()].sort((a, b) => (order[a.severity] ?? 9) - (order[b.severity] ?? 9))) {
   const fix = v.fixedIn && v.fixedIn.length ? `corregido en ${v.fixedIn.join(', ')}` : 'sin versión corregida';
   console.log(`  [${v.severity.toUpperCase()}] ${v.packageName}@${v.version}  ${v.id}  ${v.title}  (${fix})`);
   console.log(`      ruta: ${(v.from || []).join(' > ')}`);
+  console.log(`      corrección propuesta: ${proposeFix(v)}`);
+}
+if (unique.size === 0) console.log('  Sin vulnerabilidades conocidas: no hace falta ninguna corrección.');
+
+// Corrección sugerida a partir de los datos de Snyk:
+//  - upgradePath: a qué versión subir la dependencia DIRECTA (de package.json)
+//    para que la librería vulnerable quede corregida, aunque sea transitiva;
+//  - fixedIn: versiones de la librería vulnerable que ya traen el arreglo.
+function proposeFix(v) {
+  const direct = (v.from || [])[1];
+  const target = (v.upgradePath || []).find(Boolean);
+  if (v.isUpgradable && target) {
+    return `actualizar la dependencia directa ${direct} a ${target} (npm install ${target})`;
+  }
+  if (v.fixedIn && v.fixedIn.length) {
+    return `actualizar ${v.packageName} a ${v.fixedIn[0]} o posterior; si es transitiva, con "overrides" en package.json`;
+  }
+  return `no hay versión corregida: eliminar ${v.packageName} o reemplazarlo por una alternativa mantenida`;
 }

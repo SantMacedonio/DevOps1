@@ -1,5 +1,5 @@
 # KubeLinter v0.8.3
-# Fecha: 2026-11-23 19:07:24 UTC
+# Fecha: 2026-11-24 14:22:33 UTC
 # Comando: kube-linter lint --ignore-paths 'k8s/security/tests/**' k8s/ helm-chart/
 
 ## 1. Manifiestos del proyecto y Helm Chart (checks por defecto)
@@ -8,15 +8,17 @@ KubeLinter 0.8.3
 No lint errors found!
 
 ## 2. Control: manifiestos NO CONFORMES de prueba de Kyverno (k8s/security/tests/)
-##    Se espera que KubeLinter también los marque (demuestra que la herramienta funciona).
+##    Se espera que KubeLinter tambien los marque (demuestra que la herramienta funciona).
 KubeLinter 0.8.3
 
-k8s\security\tests\01-latest-tag.yaml: (object: <no namespace>/test-latest-tag apps/v1, Kind=Deployment) The container "web" is using an invalid container image, "nginxinc/nginx-unprivileged:latest". Please use images that are not blocked by the `BlockList` criteria : [".*:(latest)$" "^[^:]*$" "(.*/[^:]+)$"] (check: latest-tag, remediation: Use a container image with a specific tag other than latest.)
+C:\Users\Usuario\Documents\DevOpsEntr\DevOps1\k8s\security\tests\01-latest-tag.yaml: (object: <no namespace>/test-latest-tag apps/v1, Kind=Deployment) The container "web" is using an invalid container image, "nginxinc/nginx-unprivileged:latest". Please use images that are not blocked by the `BlockList` criteria : [".*:(latest)$" "^[^:]*$" "(.*/[^:]+)$"] (check: latest-tag, remediation: Use a container image with a specific tag other than latest.)
 
-k8s\security\tests\02-no-resources.yaml: (object: <no namespace>/test-no-resources /v1, Kind=Pod) container "web" has cpu request 0 (check: unset-cpu-requirements, remediation: Set CPU requests for your container based on its requirements. Refer to https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#requests-and-limits for details.)
+C:\Users\Usuario\Documents\DevOpsEntr\DevOps1\k8s\security\tests\02-no-resources.yaml: (object: <no namespace>/test-no-resources /v1, Kind=Pod) container "web" has cpu request 0 (check: unset-cpu-requirements, remediation: Set CPU requests for your container based on its requirements. Refer to https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#requests-and-limits for details.)
 
-k8s\security\tests\02-no-resources.yaml: (object: <no namespace>/test-no-resources /v1, Kind=Pod) container "web" has memory limit 0 (check: unset-memory-requirements, remediation: Set memory limits for your container based on its requirements. Refer to https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#requests-and-limits for details.)
+C:\Users\Usuario\Documents\DevOpsEntr\DevOps1\k8s\security\tests\02-no-resources.yaml: (object: <no namespace>/test-no-resources /v1, Kind=Pod) container "web" has memory limit 0 (check: unset-memory-requirements, remediation: Set memory limits for your container based on its requirements. Refer to https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/#requests-and-limits for details.)
 
-k8s\security\tests\03-run-as-root.yaml: (object: <no namespace>/test-run-as-root apps/v1, Kind=Deployment) container "web" is not set to runAsNonRoot (check: run-as-non-root, remediation: Set runAsUser to a non-zero number and runAsNonRoot to true in your pod or container securityContext. Refer to https://kubernetes.io/docs/tasks/configure-pod-container/security-context/ for details.)
+C:\Users\Usuario\Documents\DevOpsEntr\DevOps1\k8s\security\tests\03-run-as-root.yaml: (object: <no namespace>/test-run-as-root apps/v1, Kind=Deployment) container "web" is not set to runAsNonRoot (check: run-as-non-root, remediation: Set runAsUser to a non-zero number and runAsNonRoot to true in your pod or container securityContext. Refer to https://kubernetes.io/docs/tasks/configure-pod-container/security-context/ for details.)
 
-Error: found 4 lint errors
+C:\Users\Usuario\Documents\DevOpsEntr\DevOps1\k8s\security\tests\05-privilege-escalation.yaml: (object: <no namespace>/test-privilege-escalation apps/v1, Kind=Deployment) container "web" has AllowPrivilegeEscalation set to true. (check: privilege-escalation-container, remediation: Ensure containers do not allow privilege escalation by setting allowPrivilegeEscalation=false, privileged=false and removing CAP_SYS_ADMIN capability. See https://kubernetes.io/docs/tasks/configure-pod-container/security-context/ for more details.)
+
+Error: found 5 lint errors

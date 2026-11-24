@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Instala las herramientas de seguridad del cluster:
-#   - Kyverno + 3 políticas (latest tag, requests/limits, no root)
+#   - Kyverno + 4 políticas (latest tag, requests/limits, no root, sin escalada de privilegios)
 #   - Falco (seguridad en tiempo de ejecución) con la regla propia de Shape Popper
 # Requiere: helm, kubectl y minikube en ejecución.
 set -euo pipefail

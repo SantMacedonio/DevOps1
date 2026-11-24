@@ -2,9 +2,9 @@
 Image Source: docker://shape-game:v2
 Extracting image from docker-engine... (this can take a while for large images)
 Analyzing image...
-  efficiency: 95.9865 %
+  efficiency: 96.0004 %
   wastedBytes: 12282157 bytes (12 MB)
-  userWastedPercent: 8.4125 %
+  userWastedPercent: 8.3817 %
 Inefficient Files:
 Count  Wasted Space  File Path
     2         10 MB  /usr/lib/libcrypto.so.3
