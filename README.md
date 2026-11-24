@@ -81,6 +81,7 @@ Versiones probadas:
 | Helm | 4.3 (los scripts usan opciones de Helm 4) |
 | KubeLinter *(opcional)* | 0.8 · si no está instalado se usa el contenedor `stackrox/kube-linter` |
 | Semgrep | No hace falta instalarlo: se usa el contenedor `semgrep/semgrep:1.186.0` |
+| Jenkins *(CI/CD)* | No hace falta instalarlo: corre en un contenedor con todas sus herramientas ([`jenkins/Dockerfile`](jenkins/Dockerfile)). Necesita una cuenta gratuita de [Snyk](https://snyk.io) |
 
 Todos los scripts se pueden ejecutar desde cualquier carpeta. Están en `scripts/` en dos versiones: `.ps1` para Windows PowerShell y `.sh` para Linux, macOS, WSL o Git Bash.
 
@@ -384,6 +385,77 @@ kubectl logs -n falco -l app.kubernetes.io/name=falco -c falco -f | grep '^{'
 
 ---
 
+## Pipeline CI/CD (Jenkins)
+
+El [`Jenkinsfile`](Jenkinsfile) automatiza todo el camino desde un commit hasta el despliegue en Kubernetes:
+
+```
+ 1. Checkout ─► 2. Seguridad del código ─────────► 3. Build y tests ─► 4. Imagen Docker ──────► 5. Deploy con Helm
+    git clone      Semgrep (SAST)    ┐ en             npm ci              docker build             green ← imagen nueva
+    tag de la      Snyk (dependencias)┘ paralelo      26 tests (JUnit)    Trivy (corta si CRITICAL)  smoke test de green
+    imagen                                                                minikube o ghcr.io       switch blue → green
+                                                                                                    helm test (rollback si falla)
+```
+
+Cada etapa escribe su propio log en Jenkins y sus reportes se archivan con el build (`reports/ci/`: `semgrep.txt`, `snyk.json`, `trivy.txt`; `reports/tests/junit.xml`). La imagen se etiqueta `versión-build-commit` (por ejemplo `shape-game:1.0.0-1-a10e070`): nunca `latest`, y siempre se sabe de qué commit salió.
+
+### Cortes de seguridad
+
+Si alguna herramienta encuentra un problema crítico, el pipeline **se detiene en esa etapa**, explica el motivo y las etapas siguientes quedan como *skipped*. Así, nada vulnerable se construye, se publica ni se despliega.
+
+| Etapa | Herramienta | Se detiene si… |
+| :--- | :--- | :--- |
+| 2 | Semgrep ([`ci/semgrep-gate.js`](ci/semgrep-gate.js)) | hay hallazgos de severidad `ERROR` en el código |
+| 2 | Snyk ([`ci/snyk-summary.js`](ci/snyk-summary.js)) | alguna dependencia npm tiene una vulnerabilidad `critical` (o Snyk no puede analizar, por ejemplo por falta de token) |
+| 3 | `node --test` | falla algún test |
+| 4 | Trivy | la imagen tiene vulnerabilidades `CRITICAL` |
+| 5 | [`ci/deploy.sh`](ci/deploy.sh) | green no responde, no se conecta a Redis o falla `helm test`. En ese caso hace además `helm rollback` a la revisión anterior |
+
+### Levantar Jenkins y correr el pipeline
+
+Jenkins corre en un contenedor (`shape-jenkins`) armado con [`jenkins/Dockerfile`](jenkins/Dockerfile). La imagen trae Node.js, Docker CLI, kubectl, Helm, Trivy, Snyk y Semgrep con versiones fijas. Toda la configuración está en [`jenkins/casc.yaml`](jenkins/casc.yaml) (*Jenkins Configuration as Code*): el usuario, las credenciales y el job. No hay que configurar nada a mano en la interfaz.
+
+1. Con Minikube encendido, ejecutar el script una vez. La primera vez crea `.env.jenkins` a partir de [`.env.jenkins.example`](.env.jenkins.example):
+   ```powershell
+   .\scripts\jenkins-up.ps1        # ./scripts/jenkins-up.sh
+   ```
+2. Completar `SNYK_TOKEN=` en `.env.jenkins` (snyk.io → *Account settings* → *Auth Token*) y volver a ejecutar `jenkins-up`. Ese archivo tiene los secretos y **no se sube al repositorio**.
+3. Entrar a <http://localhost:8080> con el usuario `admin` y la contraseña que muestra el script (también está en `.env.jenkins`).
+4. Abrir el job **shape-game** → *Build with Parameters*.
+
+| Parámetro | Valores | Qué hace |
+| :--- | :--- | :--- |
+| `DEPLOY_ENV` | `prod` *(default)* / `dev` | `prod`: release `shape-game` en `default`, con Blue/Green. `dev`: release `shape-game-dev` en `shape-dev`, con la imagen nueva en los dos colores |
+| `SWITCH_TRAFFIC` | `true` *(default)* / `false` | Solo en prod: pasar el tráfico a green después del smoke test. Con `false`, green queda desplegada pero sin tráfico |
+| `PUBLISH_IMAGE` | `false` *(default)* / `true` | `false`: la imagen se carga directo en Minikube. `true`: se publica en `ghcr.io/santmacedonio/shape-game` (requiere `GHCR_USER` y `GHCR_TOKEN` en `.env.jenkins`) |
+
+Además del botón, el job revisa el repositorio cada 5 minutos (`pollSCM`) y corre solo si hay commits nuevos. Se usa *polling* porque GitHub no puede enviarle un webhook a un Jenkins que corre en una máquina local.
+
+Para detenerlo: `.\scripts\jenkins-down.ps1`. Con `-Purge` (o `--purge`) también se borran su historial y sus permisos en Kubernetes.
+
+### Cómo se conecta con Docker y Kubernetes
+
+- **Docker:** el contenedor monta el socket de Docker del host para construir imágenes. En *modo local* (`PUBLISH_IMAGE=false`), la imagen se pasa a Minikube con `docker save | ctr images import`, que es lo mismo que hace `minikube image load`.
+- **Kubernetes:** Jenkins no usa el kubeconfig de administrador. Usa la ServiceAccount `jenkins-deployer` ([`k8s/jenkins/rbac.yaml`](k8s/jenkins/rbac.yaml)), que solo puede gestionar los recursos de la app en los namespaces `default` y `shape-dev`. No puede tocar `kube-system` ni los namespaces de monitoreo, ni borrar las políticas de Kyverno.
+- **Código:** mientras la rama no esté en GitHub, el job clona el repositorio local montado en `/repo` (`REPO_URL=file:///repo`). Por eso **solo ve los cambios que tienen commit**. Para usar GitHub, basta con cambiar `REPO_URL` y `REPO_BRANCH` en `.env.jenkins`.
+
+### Evidencia ([`reports/jenkins/`](reports/jenkins/))
+
+| Build | Resultado | Qué muestra |
+| :--- | :--- | :--- |
+| [#1](reports/jenkins/build-1-exito-prod.txt) | ✅ prod, 2 min 32 s | Pipeline completo: 0 hallazgos de Semgrep y Snyk, 26/26 tests, 0 vulnerabilidades en la imagen, green desplegada, smoke test, switch a green y `helm test` |
+| [#2](reports/jenkins/build-2-detenido-por-snyk.txt) | ⛔ detenido en Snyk | Rama de prueba con `node-serialize@0.0.4` (ejecución remota de código, severidad *critical*): las etapas 3 a 5 no se ejecutan |
+| [#3](reports/jenkins/build-3-rollback-automatico.txt) | ⛔ rollback en dev | El smoke test probó un pod viejo que se estaba apagando (error del script, ya corregido). Muestra el `helm rollback` automático: dev volvió a la revisión anterior sin quedar roto |
+| [#4](reports/jenkins/build-4-exito-dev.txt) | ✅ dev, 1 min 5 s | El mismo despliegue en dev, con la corrección |
+
+### Simplificaciones respecto de un entorno real
+
+- Los builds corren en el propio controlador de Jenkins. En una empresa se usarían agentes separados, por ejemplo pods efímeros con el plugin de Kubernetes.
+- Montar el socket de Docker le da a Jenkins control total del Docker del host. Las alternativas más seguras son Kaniko, BuildKit *rootless* o un agente dedicado.
+- El despliegue de prod es automático. En un entorno real suele llevar una aprobación manual (`input`) o pasar antes por un entorno de staging.
+
+---
+
 ## Solución de problemas
 
 **Redis en `CrashLoopBackOff` con `Permission denied` sobre `appendonly.aof`.** Pasa si el PVC de Redis (`shape-game-redis-data`) contiene datos de una versión anterior del proyecto, en la que Redis corría como root. Para pasarle los archivos al usuario `redis` hace falta un pod que corra como root. Como Kyverno lo bloquea, primero se aplica una excepción puntual ([`k8s/security/exceptions/redis-chown.yaml`](k8s/security/exceptions/redis-chown.yaml)) que solo permite ese pod:
@@ -403,5 +475,9 @@ Otra opción, si no importa perder las partidas guardadas, es borrar el PVC con 
 **Un `kubectl apply` falla con `admission webhook "vpol.validate.kyverno.svc-fail" denied the request`.** Es Kyverno rechazando un recurso que no cumple alguna política; el mensaje dice cuál y por qué. Si en cambio dice que el webhook *no responde*, Kyverno no está corriendo (las políticas usan `failurePolicy: Fail`). Revisá `kubectl get pods -n kyverno`.
 
 **Grafana o Prometheus quedan en `Pending`.** Minikube no tiene recursos suficientes. Recrealo con más memoria: `minikube delete` y luego `minikube start --memory=4096 --cpus=2`.
+
+**La etapa de Snyk falla con "Snyk no pudo completar el análisis".** Falta el token o es inválido. Completá `SNYK_TOKEN` en `.env.jenkins` y volvé a ejecutar `jenkins-up`: Jenkins lee las credenciales solo al arrancar.
+
+**El deploy de Jenkins falla con `connection refused` o `i/o timeout` contra la API de Kubernetes.** La IP de Minikube cambió (por ejemplo, después de un `minikube delete`). Volvé a ejecutar `jenkins-up`, que regenera `.jenkins/kubeconfig` con la IP actual.
 
 **Pods en `ErrImageNeverPull` o `ImagePullBackOff`.** Las imágenes no están dentro de Minikube. Con Minikube encendido, volvé a ejecutar `build`.
