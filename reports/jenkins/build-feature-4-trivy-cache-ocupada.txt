@@ -1,0 +1,437 @@
+Branch indexing
+ > git rev-parse --resolve-git-dir /var/jenkins_home/caches/git-6889fae92c9e5027e439d5217c4e0d98/.git # timeout=10
+Setting origin to https://github.com/SantMacedonio/DevOps1.git
+ > git config remote.origin.url https://github.com/SantMacedonio/DevOps1.git # timeout=10
+Fetching origin...
+Fetching upstream changes from origin
+ > git --version # timeout=10
+ > git --version # 'git version 2.47.3'
+ > git config --get remote.origin.url # timeout=10
+ > git fetch --no-tags --force --progress -- origin +refs/heads/*:refs/remotes/origin/* # timeout=10
+Seen branch in repository origin/feature/contenedores-monitoreo-seguridad
+Seen branch in repository origin/main
+Seen 2 remote branches
+Obtained Jenkinsfile from 6d61aefda21b2a16bb7a1689e2242d4e2457761c
+[Pipeline] Start of Pipeline
+[Pipeline] node
+Running on Jenkins in /var/jenkins_home/workspace/contenedores-monitoreo-seguridad
+[Pipeline] {
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] timestamps
+[Pipeline] {
+[Pipeline] ansiColor
+[Pipeline] {
+[2026-11-24T20:19:18.030Z] 
+[Pipeline] timeout
+[2026-11-24T20:19:18.099Z] Timeout set to expire in 40 min
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (1. Checkout)
+[Pipeline] script
+[Pipeline] {
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] checkout
+[2026-11-24T20:19:18.334Z] Selected Git installation does not exist. Using Default
+[2026-11-24T20:19:18.334Z] The recommended git tool is: NONE
+[2026-11-24T20:19:18.334Z] No credentials specified
+[2026-11-24T20:19:18.334Z] Cloning the remote Git repository
+[2026-11-24T20:19:18.335Z] Cloning with configured refspecs honoured and without tags
+[2026-11-24T20:19:18.335Z] Cloning repository https://github.com/SantMacedonio/DevOps1.git
+[2026-11-24T20:19:18.335Z]  > git init /var/jenkins_home/workspace/contenedores-monitoreo-seguridad # timeout=10
+[2026-11-24T20:19:18.411Z] Fetching upstream changes from https://github.com/SantMacedonio/DevOps1.git
+[2026-11-24T20:19:18.411Z]  > git --version # timeout=10
+[2026-11-24T20:19:18.416Z]  > git --version # 'git version 2.47.3'
+[2026-11-24T20:19:18.416Z]  > git fetch --no-tags --force --progress -- https://github.com/SantMacedonio/DevOps1.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+[2026-11-24T20:19:19.370Z]  > git config remote.origin.url https://github.com/SantMacedonio/DevOps1.git # timeout=10
+[2026-11-24T20:19:19.394Z]  > git config --add remote.origin.fetch +refs/heads/*:refs/remotes/origin/* # timeout=10
+[2026-11-24T20:19:19.407Z] Avoid second fetch
+[2026-11-24T20:19:19.407Z] Checking out Revision 6d61aefda21b2a16bb7a1689e2242d4e2457761c (feature/contenedores-monitoreo-seguridad)
+[2026-11-24T20:19:19.407Z]  > git config core.sparsecheckout # timeout=10
+[2026-11-24T20:19:19.426Z]  > git checkout -f 6d61aefda21b2a16bb7a1689e2242d4e2457761c # timeout=10
+[2026-11-24T20:19:19.548Z] Commit message: "Captura del dashboard de Grafana con tráfico simulado"
+[2026-11-24T20:19:19.549Z]  > git rev-list --no-walk 9cbd5bb65ea3a446f5c8dd1a204fc456836dca65 # timeout=10
+[Pipeline] sh
+[2026-11-24T20:19:19.871Z] + echo Repositorio clonado:
+[2026-11-24T20:19:19.871Z] Repositorio clonado:
+[2026-11-24T20:19:19.871Z] + git log -1 --format=  Commit:  %H%n  Autor:   %an%n  Fecha:   %ad%n  Mensaje: %s
+[2026-11-24T20:19:19.871Z]   Commit:  6d61aefda21b2a16bb7a1689e2242d4e2457761c
+[2026-11-24T20:19:19.871Z]   Autor:   SantMacedonio
+[2026-11-24T20:19:19.871Z]   Fecha:   Tue Nov 24 17:15:50 2026 -0300
+[2026-11-24T20:19:19.871Z]   Mensaje: Captura del dashboard de Grafana con tráfico simulado
+[2026-11-24T20:19:19.871Z] + mkdir -p reports/ci
+[Pipeline] script
+[Pipeline] {
+[Pipeline] sh
+[2026-11-24T20:19:20.186Z] + git rev-parse --short HEAD
+[Pipeline] sh
+[2026-11-24T20:19:20.478Z] + node -p require('./package.json').version
+[Pipeline] echo
+[2026-11-24T20:19:21.491Z] Rama: feature/contenedores-monitoreo-seguridad  ->  entorno: dev  |  publicar en ghcr.io: false
+[Pipeline] echo
+[2026-11-24T20:19:21.520Z] Imagen a construir: shape-game:1.0.0-feature-contenedores-monitoreo-seguridad-4-6d61aef
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (2. Seguridad del código)
+[Pipeline] parallel
+[Pipeline] { (Branch: Semgrep (SAST))
+[Pipeline] { (Branch: Snyk (dependencias))
+[Pipeline] stage
+[Pipeline] { (Semgrep (SAST))
+[Pipeline] stage
+[Pipeline] { (Snyk (dependencias))
+[Pipeline] script
+[Pipeline] {
+[Pipeline] script
+[Pipeline] {
+[Pipeline] }
+[Pipeline] withCredentials
+[Pipeline] // script
+[Pipeline] sh
+[2026-11-24T20:19:22.003Z] Masking supported pattern matches of $SNYK_TOKEN
+[Pipeline] {
+[Pipeline] sh
+[2026-11-24T20:19:22.262Z] + semgrep --version
+[2026-11-24T20:19:22.341Z] + snyk --version
+[2026-11-24T20:19:26.470Z] 1.1309.0
+[2026-11-24T20:19:26.470Z] + snyk test --severity-threshold=critical --json-file-output=reports/ci/snyk.json
+[2026-11-24T20:19:44.094Z] 1.186.0
+[2026-11-24T20:19:44.345Z] + semgrep scan --config p/javascript --config p/nodejs --config p/expressjs --config p/xss --config p/owasp-top-ten --config p/security-audit --config p/secrets --config p/dockerfile --config p/kubernetes --config semgrep/shape-popper.yaml --metrics=off --no-git-ignore --exclude node_modules --exclude reports --exclude .npm-cache --exclude k8s/security/tests --exclude semgrep/shape-popper.js --json-output=reports/ci/semgrep.json --text-output=reports/ci/semgrep-report.txt
+[2026-11-24T20:20:22.663Z] 
+[2026-11-24T20:20:22.663Z] Testing /var/jenkins_home/workspace/contenedores-monitoreo-seguridad...
+[2026-11-24T20:20:22.664Z] 
+[2026-11-24T20:20:22.664Z] Organization:      (omitido)
+[2026-11-24T20:20:22.664Z] Package manager:   npm
+[2026-11-24T20:20:22.664Z] Target file:       package-lock.json
+[2026-11-24T20:20:22.664Z] Project name:      k8s-shape-popper
+[2026-11-24T20:20:22.664Z] Open source:       no
+[2026-11-24T20:20:22.664Z] Project path:      /var/jenkins_home/workspace/contenedores-monitoreo-seguridad
+[2026-11-24T20:20:22.664Z] Licenses:          enabled
+[2026-11-24T20:20:22.664Z] 
+[2026-11-24T20:20:22.664Z] ✔ Tested 80 dependencies for known issues, no vulnerable paths found.
+[2026-11-24T20:20:22.664Z] 
+[2026-11-24T20:20:22.664Z] 
+[Pipeline] sh
+[2026-11-24T20:20:23.047Z] + node ci/snyk-summary.js reports/ci/snyk.json
+[2026-11-24T20:20:23.047Z] ============ Snyk (dependencias npm) ============
+[2026-11-24T20:20:23.047Z] Proyecto: k8s-shape-popper   Dependencias analizadas: 80
+[2026-11-24T20:20:23.047Z] Umbral de corte: critical
+[2026-11-24T20:20:23.047Z] Vulnerabilidades: critical=0  high=0  medium=0  low=0
+[2026-11-24T20:20:23.047Z]   Sin vulnerabilidades conocidas: no hace falta ninguna corrección.
+[2026-11-24T20:20:23.056Z]                
+[2026-11-24T20:20:23.056Z]                
+[2026-11-24T20:20:23.056Z] ┌─────────────┐
+[2026-11-24T20:20:23.056Z] │ Scan Status │
+[2026-11-24T20:20:23.056Z] └─────────────┘
+[2026-11-24T20:20:23.056Z]   Scanning 89 files with 743 Code rules:
+[2026-11-24T20:20:23.056Z]                                                                                                                         
+[2026-11-24T20:20:23.056Z]   Language      Rules   Files          Origin      Rules                                                                
+[2026-11-24T20:20:23.056Z]  ─────────────────────────────        ───────────────────                                                               
+[2026-11-24T20:20:23.056Z]   <multilang>      61      59          Community     740                                                                
+[2026-11-24T20:20:23.056Z]   yaml             32      26          Custom          3                                                                
+[2026-11-24T20:20:23.056Z]   bash              1      17                                                                                           
+[2026-11-24T20:20:23.056Z]   js               86       9                                                                                           
+[2026-11-24T20:20:23.056Z]   dockerfile        7       3                                                                                           
+[2026-11-24T20:20:23.056Z]   json              3       3                                                                                           
+[2026-11-24T20:20:23.056Z]   php              22       1                                                                                           
+[2026-11-24T20:20:23.056Z]   html              1       1                                                                                           
+[2026-11-24T20:20:23.056Z]                                                                                                                         
+[2026-11-24T20:20:23.056Z]                 
+[2026-11-24T20:20:23.056Z]                 
+[2026-11-24T20:20:23.056Z] ┌──────────────┐
+[2026-11-24T20:20:23.056Z] │ Scan Summary │
+[2026-11-24T20:20:23.056Z] └──────────────┘
+[2026-11-24T20:20:23.056Z] ✅ Scan completed successfully.
+[2026-11-24T20:20:23.056Z]  • Findings: 1 (1 blocking)
+[2026-11-24T20:20:23.056Z]  • Rules run: 212
+[2026-11-24T20:20:23.056Z]  • Targets scanned: 89
+[2026-11-24T20:20:23.056Z]  • Parsed lines: ~99.9%
+[2026-11-24T20:20:23.056Z]  • Scan skipped: 
+[2026-11-24T20:20:23.056Z]    ◦ Matching --exclude patterns: 3
+[2026-11-24T20:20:23.056Z]    ◦ Files matching .semgrepignore patterns: 3
+[2026-11-24T20:20:23.056Z]  • For a detailed list of skipped files and lines, run semgrep with the --verbose flag
+[2026-11-24T20:20:23.056Z] Ran 212 rules on 89 files: 1 finding.
+[2026-11-24T20:20:23.056Z]                   
+[2026-11-24T20:20:23.056Z]                   
+[2026-11-24T20:20:23.056Z] ┌────────────────┐
+[2026-11-24T20:20:23.056Z] │ 1 Code Finding │
+[2026-11-24T20:20:23.056Z] └────────────────┘
+[2026-11-24T20:20:23.056Z]                      
+[2026-11-24T20:20:23.056Z]     src/public/app.js
+[2026-11-24T20:20:23.056Z]     ❯❱ semgrep.innerhtml-con-contenido-dinamico
+[2026-11-24T20:20:23.056Z]           ❰❰ Blocking ❱❱
+[2026-11-24T20:20:23.056Z]           Se asigna HTML armado dinámicamente a innerHTML. Si algún valor viene del usuario o del servidor sin
+[2026-11-24T20:20:23.056Z]           escapar, es un XSS. Usar textContent, o escapar cada valor interpolado (escapeHtml) y justificarlo. 
+[2026-11-24T20:20:23.056Z]                                                                                                               
+[2026-11-24T20:20:23.056Z]           874┆ els.upgradesContainer.innerHTML = html;
+[2026-11-24T20:20:23.056Z] 
+[Pipeline] sh
+[Pipeline] }
+[Pipeline] // withCredentials
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] }
+[Pipeline] // stage
+[2026-11-24T20:20:23.361Z] + node ci/semgrep-gate.js reports/ci/semgrep.json
+[2026-11-24T20:20:23.361Z] ================ Semgrep (SAST) ================
+[2026-11-24T20:20:23.361Z] Archivos analizados: 89
+[2026-11-24T20:20:23.361Z] Hallazgos: ERROR=0  WARNING=1  INFO=0
+[2026-11-24T20:20:23.361Z]   [WARNING] src/public/app.js:874  semgrep.innerhtml-con-contenido-dinamico
+[2026-11-24T20:20:23.361Z]       Se asigna HTML armado dinámicamente a innerHTML. Si algún valor viene del usuario o del servidor sin escapar, es un XSS. Usar textContent, o escapar cada valor interpolado (escapeHtml) y justificarlo.
+[2026-11-24T20:20:23.361Z] Avisos del análisis (archivos que no se pudieron leer): 9
+[2026-11-24T20:20:23.361Z] 
+[2026-11-24T20:20:23.361Z] [OK] Sin hallazgos de severidad ERROR
+[Pipeline] }
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // parallel
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (3. Build y tests)
+[Pipeline] script
+[Pipeline] {
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] sh
+[2026-11-24T20:20:24.179Z] + node --version
+[2026-11-24T20:20:24.179Z] v22.23.5
+[2026-11-24T20:20:24.179Z] + npm ci --no-audit --no-fund
+[2026-11-24T20:20:28.311Z] 
+[2026-11-24T20:20:28.311Z] added 81 packages in 4s
+[2026-11-24T20:20:28.311Z] + npm run test:ci
+[2026-11-24T20:20:28.562Z] 
+[2026-11-24T20:20:28.562Z] > k8s-shape-popper@1.0.0 pretest:ci
+[2026-11-24T20:20:28.562Z] > node -e "require('fs').mkdirSync('reports/tests',{recursive:true})"
+[2026-11-24T20:20:28.562Z] 
+[2026-11-24T20:20:28.562Z] 
+[2026-11-24T20:20:28.562Z] > k8s-shape-popper@1.0.0 test:ci
+[2026-11-24T20:20:28.562Z] > node --test --test-force-exit --test-reporter=spec --test-reporter-destination=stdout --test-reporter=junit --test-reporter-destination=reports/tests/junit.xml "tests/**/*.test.js"
+[2026-11-24T20:20:28.562Z] 
+[2026-11-24T20:20:29.112Z] [Redis] Disabled (REDIS_ENABLED=false): using in-memory store only
+[2026-11-24T20:20:29.112Z] ▶ probes de Kubernetes
+[2026-11-24T20:20:29.112Z]   ✔ GET /healthz responde 200 "healthy" (106.860513ms)
+[2026-11-24T20:20:29.112Z]   ✔ GET /readyz informa el modo memoria cuando no hay Redis (8.119304ms)
+[2026-11-24T20:20:29.112Z] ✔ probes de Kubernetes (116.378385ms)
+[2026-11-24T20:20:29.112Z] ▶ frontend y headers de seguridad
+[2026-11-24T20:20:29.112Z]   ✔ GET / sirve el juego (20.031496ms)
+[2026-11-24T20:20:29.112Z]   ✔ incluye CSP estricta y no expone X-Powered-By (17.11415ms)
+[2026-11-24T20:20:29.112Z] ✔ frontend y headers de seguridad (37.561367ms)
+[2026-11-24T20:20:29.112Z] ▶ API del juego
+[2026-11-24T20:20:29.112Z]   ✔ GET /api/version: Blue no ofrece mejoras exclusivas de Green (18.056354ms)
+[2026-11-24T20:20:29.363Z]   ✔ rechaza playerId inválidos (400) (78.756566ms)
+[2026-11-24T20:20:29.363Z]   ✔ un jugador nuevo empieza con 0 puntos (14.919124ms)
+[2026-11-24T20:20:29.363Z]   ✔ no se puede comprar sin puntos suficientes (400) (7.742872ms)
+[2026-11-24T20:20:29.363Z]   ✔ guardar y comprar: descuenta el costo y sube el nivel (7.586366ms)
+[2026-11-24T20:20:29.363Z]   ✔ rechaza claves heredadas como "constructor" o "__proto__" (400) (9.652439ms)
+[2026-11-24T20:20:29.363Z]   ✔ el prestigio está bloqueado en Blue (403) (4.177847ms)
+[2026-11-24T20:20:29.363Z]   ✔ Blue conserva las torretas de una partida jugada en Green (rollback sin pérdida de datos) (15.578047ms)
+[2026-11-24T20:20:29.363Z] PayloadTooLargeError: request entity too large
+[2026-11-24T20:20:29.363Z]     at readStream (/var/jenkins_home/workspace/contenedores-monitoreo-seguridad/node_modules/raw-body/index.js:163:17)
+[2026-11-24T20:20:29.363Z]     at getRawBody (/var/jenkins_home/workspace/contenedores-monitoreo-seguridad/node_modules/raw-body/index.js:116:12)
+[2026-11-24T20:20:29.363Z]     at read (/var/jenkins_home/workspace/contenedores-monitoreo-seguridad/node_modules/body-parser/lib/read.js:80:3)
+[2026-11-24T20:20:29.363Z]     at jsonParser (/var/jenkins_home/workspace/contenedores-monitoreo-seguridad/node_modules/body-parser/lib/types/json.js:142:5)
+[2026-11-24T20:20:29.363Z]     at Layer.handle [as handle_request] (/var/jenkins_home/workspace/contenedores-monitoreo-seguridad/node_modules/express/lib/router/layer.js:95:5)
+[2026-11-24T20:20:29.363Z]     at trim_prefix (/var/jenkins_home/workspace/contenedores-monitoreo-seguridad/node_modules/express/lib/router/index.js:328:13)
+[2026-11-24T20:20:29.363Z]     at /var/jenkins_home/workspace/contenedores-monitoreo-seguridad/node_modules/express/lib/router/index.js:286:9
+[2026-11-24T20:20:29.363Z]     at Function.process_params (/var/jenkins_home/workspace/contenedores-monitoreo-seguridad/node_modules/express/lib/router/index.js:346:12)
+[2026-11-24T20:20:29.363Z]     at next (/var/jenkins_home/workspace/contenedores-monitoreo-seguridad/node_modules/express/lib/router/index.js:280:10)
+[2026-11-24T20:20:29.363Z]     at internalNext (/var/jenkins_home/workspace/contenedores-monitoreo-seguridad/node_modules/helmet/index.cjs:558:6)
+[2026-11-24T20:20:29.363Z]   ✔ rechaza bodies de más de 100 KB (413) (10.059554ms)
+[2026-11-24T20:20:29.363Z] ✔ API del juego (167.576707ms)
+[2026-11-24T20:20:29.363Z] ▶ métricas de Prometheus
+[2026-11-24T20:20:29.363Z]   ✔ GET /metrics expone métricas HTTP, de proceso y de negocio (22.552892ms)
+[2026-11-24T20:20:29.363Z] ✔ métricas de Prometheus (36.278474ms)
+[2026-11-24T20:20:29.615Z] ▶ getUpgradeCost
+[2026-11-24T20:20:29.615Z]   ✔ el costo base es el del nivel 0 (0.961033ms)
+[2026-11-24T20:20:29.615Z]   ✔ el costo crece con el multiplicador y se redondea hacia abajo (0.255309ms)
+[2026-11-24T20:20:29.615Z]   ✔ una mejora inexistente cuesta Infinity (no se puede comprar) (0.181606ms)
+[2026-11-24T20:20:29.615Z]   ✔ al llegar al nivel máximo el costo es Infinity (1.109339ms)
+[2026-11-24T20:20:29.615Z] ✔ getUpgradeCost (3.773533ms)
+[2026-11-24T20:20:29.615Z] ▶ calculatePrestigeShards
+[2026-11-24T20:20:29.615Z]   ✔ no da fragmentos por debajo de los mínimos (500 de energía y 30 figuras) (0.359113ms)
+[2026-11-24T20:20:29.615Z]   ✔ en el mínimo exacto da 1 fragmento (0.234008ms)
+[2026-11-24T20:20:29.615Z]   ✔ crece con la raíz cuadrada de la energía (0.29281ms)
+[2026-11-24T20:20:29.615Z] ✔ calculatePrestigeShards (1.286545ms)
+[2026-11-24T20:20:29.615Z] ▶ createInitialState
+[2026-11-24T20:20:29.615Z]   ✔ un jugador nuevo empieza sin puntos, en el nivel 0 y sin prestigio (0.374014ms)
+[2026-11-24T20:20:29.615Z] ✔ createInitialState (7.727872ms)
+[2026-11-24T20:20:29.615Z] ▶ sanitizeState
+[2026-11-24T20:20:29.615Z]   ✔ sin estado previo devuelve el estado inicial (1.579256ms)
+[2026-11-24T20:20:29.615Z]   ✔ conserva los puntos y completa los campos faltantes (0.346212ms)
+[2026-11-24T20:20:29.615Z]   ✔ migra el nombre viejo de mejora clickPower a clickDamage (0.195407ms)
+[2026-11-24T20:20:29.615Z]   ✔ en Blue (sin prestigio) conserva las torretas y los fragmentos, pero no aplica el multiplicador (0.169306ms)
+[2026-11-24T20:20:29.615Z]   ✔ en Green (con prestigio) aplica +10% por fragmento (0.204407ms)
+[2026-11-24T20:20:29.615Z] ✔ sanitizeState (2.877701ms)
+[2026-11-24T20:20:29.615Z] ℹ tests 27
+[2026-11-24T20:20:29.615Z] ℹ suites 8
+[2026-11-24T20:20:29.615Z] ℹ pass 27
+[2026-11-24T20:20:29.615Z] ℹ fail 0
+[2026-11-24T20:20:29.615Z] ℹ cancelled 0
+[2026-11-24T20:20:29.615Z] ℹ skipped 0
+[2026-11-24T20:20:29.615Z] ℹ todo 0
+[2026-11-24T20:20:29.615Z] ℹ duration_ms 943.799593
+Post stage
+[Pipeline] junit
+[2026-11-24T20:20:29.727Z] Recording test results
+[2026-11-24T20:20:29.802Z] [Checks API] No suitable checks publisher found.
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (4. Imagen Docker)
+[Pipeline] script
+[Pipeline] {
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] sh
+[2026-11-24T20:20:30.429Z] + git rev-parse HEAD
+[2026-11-24T20:20:30.429Z] + date -u +%Y-%m-%dT%H:%M:%SZ
+[2026-11-24T20:20:30.429Z] + docker build --pull --no-cache --label org.opencontainers.image.revision=6d61aefda21b2a16bb7a1689e2242d4e2457761c --label org.opencontainers.image.created=2026-11-24T20:20:30Z --label org.opencontainers.image.source=https://github.com/SantMacedonio/DevOps1 --label org.opencontainers.image.version=1.0.0-feature-contenedores-monitoreo-seguridad-4-6d61aef -t shape-game:1.0.0-feature-contenedores-monitoreo-seguridad-4-6d61aef .
+[2026-11-24T20:20:31.811Z] #0 building with "default" instance using docker driver
+[2026-11-24T20:20:31.811Z] 
+[2026-11-24T20:20:31.811Z] #1 [internal] load build definition from Dockerfile
+[2026-11-24T20:20:31.811Z] #1 transferring dockerfile: 2.56kB 0.0s done
+[2026-11-24T20:20:31.811Z] #1 DONE 0.1s
+[2026-11-24T20:20:31.811Z] 
+[2026-11-24T20:20:31.811Z] #2 resolve image config for docker-image://docker.io/docker/dockerfile:1
+[2026-11-24T20:20:33.154Z] #2 DONE 1.3s
+[2026-11-24T20:20:33.154Z] 
+[2026-11-24T20:20:33.154Z] #3 docker-image://docker.io/docker/dockerfile:1@sha256:572cebbc2b15e6f84c077742952674889cb63cd5e9b80abdffcbe587b6f19183
+[2026-11-24T20:20:33.154Z] #3 resolve docker.io/docker/dockerfile:1@sha256:572cebbc2b15e6f84c077742952674889cb63cd5e9b80abdffcbe587b6f19183 0.0s done
+[2026-11-24T20:20:33.154Z] #3 CACHED
+[2026-11-24T20:20:33.404Z] 
+[2026-11-24T20:20:33.404Z] #4 [internal] load metadata for docker.io/library/node:22.23.5-alpine3.24
+[2026-11-24T20:20:34.344Z] #4 DONE 0.9s
+[2026-11-24T20:20:34.344Z] 
+[2026-11-24T20:20:34.344Z] #5 [internal] load metadata for docker.io/library/alpine:3.24.4
+[2026-11-24T20:20:34.597Z] #5 DONE 0.9s
+[2026-11-24T20:20:34.597Z] 
+[2026-11-24T20:20:34.597Z] #6 [internal] load .dockerignore
+[2026-11-24T20:20:34.597Z] #6 transferring context: 217B 0.0s done
+[2026-11-24T20:20:34.597Z] #6 DONE 0.0s
+[2026-11-24T20:20:34.597Z] 
+[2026-11-24T20:20:34.597Z] #7 [deps 1/4] FROM docker.io/library/node:22.23.5-alpine3.24@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a
+[2026-11-24T20:20:34.597Z] #7 resolve docker.io/library/node:22.23.5-alpine3.24@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a
+[2026-11-24T20:20:34.597Z] #7 resolve docker.io/library/node:22.23.5-alpine3.24@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a 0.1s done
+[2026-11-24T20:20:34.597Z] #7 DONE 0.1s
+[2026-11-24T20:20:34.597Z] 
+[2026-11-24T20:20:34.597Z] #8 [runner 1/7] FROM docker.io/library/alpine:3.24.4@sha256:f59abe656b692d901e184be3445e084786602108599d2a51d229c0f5a48c71bf
+[2026-11-24T20:20:34.597Z] #8 resolve docker.io/library/alpine:3.24.4@sha256:f59abe656b692d901e184be3445e084786602108599d2a51d229c0f5a48c71bf 0.1s done
+[2026-11-24T20:20:34.597Z] #8 CACHED
+[2026-11-24T20:20:34.597Z] 
+[2026-11-24T20:20:34.597Z] #9 [deps 2/4] WORKDIR /app
+[2026-11-24T20:20:34.597Z] #9 CACHED
+[2026-11-24T20:20:34.597Z] 
+[2026-11-24T20:20:34.597Z] #10 [internal] load build context
+[2026-11-24T20:20:34.597Z] #10 transferring context: 118.86kB 0.1s done
+[2026-11-24T20:20:34.597Z] #10 DONE 0.1s
+[2026-11-24T20:20:34.597Z] 
+[2026-11-24T20:20:34.597Z] #11 [runner 2/7] RUN apk upgrade --no-cache     && apk add --no-cache libstdc++ libgcc     && addgroup -g 1000 -S node     && adduser -u 1000 -S -G node -H -h /app node
+[2026-11-24T20:20:34.847Z] #11 ...
+[2026-11-24T20:20:34.847Z] 
+[2026-11-24T20:20:34.847Z] #12 [deps 3/4] COPY package.json package-lock.json ./
+[2026-11-24T20:20:34.847Z] #12 DONE 0.1s
+[2026-11-24T20:20:35.094Z] 
+[2026-11-24T20:20:35.094Z] #13 [deps 4/4] RUN npm ci --omit=dev --no-audit --no-fund     && npm cache clean --force
+[2026-11-24T20:20:38.324Z] #13 ...
+[2026-11-24T20:20:38.324Z] 
+[2026-11-24T20:20:38.324Z] #11 [runner 2/7] RUN apk upgrade --no-cache     && apk add --no-cache libstdc++ libgcc     && addgroup -g 1000 -S node     && adduser -u 1000 -S -G node -H -h /app node
+[2026-11-24T20:20:38.324Z] #11 2.026 (1/3) Upgrading libcrypto3 (3.5.9-r0 -> 3.5.9-r1)
+[2026-11-24T20:20:38.324Z] #11 2.236 (2/3) Upgrading libssl3 (3.5.9-r0 -> 3.5.9-r1)
+[2026-11-24T20:20:38.324Z] #11 2.273 (3/3) Upgrading zlib (1.3.2-r1 -> 1.4-r0)
+[2026-11-24T20:20:38.324Z] #11 2.289 OK: 8216 KiB in 16 packages
+[2026-11-24T20:20:38.324Z] #11 3.147 (1/2) Installing libgcc (15.2.0-r5)
+[2026-11-24T20:20:38.324Z] #11 3.165 (2/2) Installing libstdc++ (15.2.0-r5)
+[2026-11-24T20:20:38.324Z] #11 3.245 OK: 10.9 MiB in 18 packages
+[2026-11-24T20:20:38.324Z] #11 DONE 3.4s
+[2026-11-24T20:20:38.324Z] 
+[2026-11-24T20:20:38.324Z] #13 [deps 4/4] RUN npm ci --omit=dev --no-audit --no-fund     && npm cache clean --force
+[2026-11-24T20:20:40.809Z] #13 5.631 
+[2026-11-24T20:20:40.809Z] #13 5.631 added 81 packages in 3s
+[2026-11-24T20:20:40.809Z] #13 5.636 npm notice
+[2026-11-24T20:20:40.809Z] #13 5.636 npm notice New major version of npm available! 10.9.9 -> 12.2.3
+[2026-11-24T20:20:40.809Z] #13 5.636 npm notice Changelog: https://github.com/npm/cli/releases/tag/v12.2.3
+[2026-11-24T20:20:40.809Z] #13 5.636 npm notice To update run: npm install -g npm@12.2.3
+[2026-11-24T20:20:40.809Z] #13 5.636 npm notice
+[2026-11-24T20:20:40.809Z] #13 5.875 npm warn using --force Recommended protections disabled.
+[2026-11-24T20:20:41.060Z] #13 DONE 6.3s
+[2026-11-24T20:20:43.543Z] 
+[2026-11-24T20:20:43.543Z] #14 [runner 3/7] COPY --from=deps /usr/local/bin/node /usr/local/bin/node
+[2026-11-24T20:20:44.093Z] #14 DONE 0.5s
+[2026-11-24T20:20:44.093Z] 
+[2026-11-24T20:20:44.093Z] #15 [runner 4/7] WORKDIR /app
+[2026-11-24T20:20:44.093Z] #15 DONE 0.0s
+[2026-11-24T20:20:44.093Z] 
+[2026-11-24T20:20:44.093Z] #16 [runner 5/7] COPY --from=deps /app/node_modules ./node_modules
+[2026-11-24T20:20:44.344Z] #16 DONE 0.4s
+[2026-11-24T20:20:44.596Z] 
+[2026-11-24T20:20:44.596Z] #17 [runner 6/7] COPY package.json ./
+[2026-11-24T20:20:44.596Z] #17 DONE 0.1s
+[2026-11-24T20:20:44.596Z] 
+[2026-11-24T20:20:44.596Z] #18 [runner 7/7] COPY src/ ./src/
+[2026-11-24T20:20:44.596Z] #18 DONE 0.0s
+[2026-11-24T20:20:44.596Z] 
+[2026-11-24T20:20:44.596Z] #19 exporting to image
+[2026-11-24T20:20:44.596Z] #19 exporting layers
+[2026-11-24T20:20:52.627Z] #19 exporting layers 7.8s done
+[2026-11-24T20:20:52.627Z] #19 exporting manifest sha256:6094b1e42df8df23201a6ac6203b43820f529b3c3cb3dda6682b12f912e29679
+[2026-11-24T20:20:52.627Z] #19 exporting manifest sha256:6094b1e42df8df23201a6ac6203b43820f529b3c3cb3dda6682b12f912e29679 0.0s done
+[2026-11-24T20:20:52.627Z] #19 exporting config sha256:a60a1526f308ac3e6b2d5c16797a5dd8623c2a5ebb5e69fe0c13e90c724dfdef 0.0s done
+[2026-11-24T20:20:52.627Z] #19 exporting attestation manifest sha256:eb3806f611c95b3b53d804f1bce1402d37b3a84b1040ee0f0d94f99bb2fc1888 0.0s done
+[2026-11-24T20:20:52.627Z] #19 exporting manifest list sha256:6656c17738aec759cb26ab82524de3ade02b13bfc8178c508d2e674eb1ba17ec
+[2026-11-24T20:20:52.627Z] #19 exporting manifest list sha256:6656c17738aec759cb26ab82524de3ade02b13bfc8178c508d2e674eb1ba17ec 0.0s done
+[2026-11-24T20:20:52.627Z] #19 naming to docker.io/library/shape-game:1.0.0-feature-contenedores-monitoreo-seguridad-4-6d61aef done
+[2026-11-24T20:20:52.627Z] #19 unpacking to docker.io/library/shape-game:1.0.0-feature-contenedores-monitoreo-seguridad-4-6d61aef
+[2026-11-24T20:20:55.870Z] #19 unpacking to docker.io/library/shape-game:1.0.0-feature-contenedores-monitoreo-seguridad-4-6d61aef 2.9s done
+[2026-11-24T20:20:55.870Z] #19 DONE 10.9s
+[2026-11-24T20:20:55.870Z] + docker image ls shape-game:1.0.0-feature-contenedores-monitoreo-seguridad-4-6d61aef
+[2026-11-24T20:20:55.870Z] IMAGE                                                                 ID             DISK USAGE   CONTENT SIZE   EXTRA
+[2026-11-24T20:20:55.870Z] shape-game:1.0.0-feature-contenedores-monitoreo-seguridad-4-6d61aef   6656c17738ae        218MB         57.6MB        
+[Pipeline] script
+[Pipeline] {
+[Pipeline] sh
+[2026-11-24T20:20:56.197Z] + trivy image --quiet --scanners vuln,secret --format table --output reports/ci/trivy.txt shape-game:1.0.0-feature-contenedores-monitoreo-seguridad-4-6d61aef
+[2026-11-24T20:21:04.232Z] 2026-11-24T20:21:02Z	FATAL	Fatal error	run error: image scan error: scan error: unable to initialize a scan service: unable to initialize cache: unable to initialize fs cache: cache may be in use by another process: timeout
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (5. Deploy con Helm)
+Stage "5. Deploy con Helm" skipped due to earlier failure(s)
+[Pipeline] getContext
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Declarative: Post Actions)
+[Pipeline] archiveArtifacts
+[2026-11-24T20:21:05.817Z] Archiving artifacts
+[Pipeline] sh
+[2026-11-24T20:21:06.876Z] + docker image rm shape-game:1.0.0-feature-contenedores-monitoreo-seguridad-4-6d61aef
+[Pipeline] echo
+[2026-11-24T20:21:08.042Z] [X] Pipeline DETENIDO en la etapa '4. Imagen Docker'. Ver el log de esa etapa y los reportes archivados (reports/ci/).
+[Pipeline] cleanWs
+[2026-11-24T20:21:08.161Z] [WS-CLEANUP] Deleting project workspace...
+[2026-11-24T20:21:08.161Z] [WS-CLEANUP] Deferred wipeout is used...
+[2026-11-24T20:21:08.203Z] [WS-CLEANUP] done
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // timeout
+[Pipeline] }
+[2026-11-24T20:21:08.791Z] 
+[Pipeline] // ansiColor
+[Pipeline] }
+[Pipeline] // timestamps
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+ERROR: script returned exit code 1
+Finished: FAILURE

@@ -95,9 +95,14 @@ pipeline {
                             env.CURRENT_STAGE = 'Snyk (dependencias)'
                             withCredentials([string(credentialsId: 'snyk-token', variable: 'SNYK_TOKEN')]) {
                                 // Códigos de salida: 0 = OK, 1 = vulnerabilidades >= umbral, 2/3 = error de Snyk
+                                // La línea "Organization:" muestra el usuario de Snyk: se filtra de la consola
                                 def rc = sh(returnStatus: true, script: '''
                                     snyk --version
-                                    snyk test --severity-threshold=critical --json-file-output="$REPORTS/snyk.json"
+                                    rc=0
+                                    snyk test --severity-threshold=critical --json-file-output="$REPORTS/snyk.json" > "$REPORTS/snyk.txt" 2>&1 || rc=$?
+                                    grep -v '^Organization:' "$REPORTS/snyk.txt" | tee "$REPORTS/snyk.txt.tmp"
+                                    mv "$REPORTS/snyk.txt.tmp" "$REPORTS/snyk.txt"
+                                    exit $rc
                                 ''')
                                 sh 'node ci/snyk-summary.js "$REPORTS/snyk.json"'
                                 if (rc == 1) {
@@ -143,15 +148,18 @@ pipeline {
                     docker image ls "$IMAGE_REPO:$IMAGE_TAG"
                 '''
                 script {
+                    // Trivy no deja que dos procesos usen su caché a la vez. Si corren dos builds
+                    // juntos (por ejemplo, main y una rama feature), flock hace que el segundo
+                    // espere su turno (hasta 10 minutos) en lugar de fallar.
                     // Reporte completo + corte si hay vulnerabilidades CRITICAL (antes de publicar)
-                    sh 'trivy image --quiet --scanners vuln,secret --format table --output "$REPORTS/trivy.txt" "$IMAGE_REPO:$IMAGE_TAG" && cat "$REPORTS/trivy.txt"'
-                    def rc = sh(returnStatus: true, script: 'trivy image --quiet --scanners vuln --severity CRITICAL --exit-code 1 "$IMAGE_REPO:$IMAGE_TAG"')
+                    sh 'flock -w 600 "$HOME/.cache/trivy.lock" trivy image --quiet --scanners vuln,secret --format table --output "$REPORTS/trivy.txt" "$IMAGE_REPO:$IMAGE_TAG" && cat "$REPORTS/trivy.txt"'
+                    def rc = sh(returnStatus: true, script: 'flock -w 600 "$HOME/.cache/trivy.lock" trivy image --quiet --scanners vuln --severity CRITICAL --exit-code 1 "$IMAGE_REPO:$IMAGE_TAG"')
                     if (rc != 0) {
                         error('Trivy encontró vulnerabilidades CRÍTICAS en la imagen: no se publica ni se despliega (ver reports/ci/trivy.txt).')
                     }
                     // Corte por secretos (claves, tokens, contraseñas) de cualquier severidad:
                     // la imagen se publica en un registry público, así que nada sensible puede viajar adentro
-                    rc = sh(returnStatus: true, script: 'trivy image --quiet --scanners secret --exit-code 1 "$IMAGE_REPO:$IMAGE_TAG"')
+                    rc = sh(returnStatus: true, script: 'flock -w 600 "$HOME/.cache/trivy.lock" trivy image --quiet --scanners secret --exit-code 1 "$IMAGE_REPO:$IMAGE_TAG"')
                     if (rc != 0) {
                         error('Trivy encontró SECRETOS dentro de la imagen: no se publica ni se despliega (ver el detalle arriba y reports/ci/trivy.txt).')
                     }
