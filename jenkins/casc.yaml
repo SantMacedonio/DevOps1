@@ -63,7 +63,7 @@ jobs:
         parameters {
           choiceParam('DEPLOY_ENV', ['prod', 'dev'], 'prod: release "shape-game" (namespace default, Blue/Green). dev: release "shape-game-dev" (namespace shape-dev).')
           booleanParam('PUBLISH_IMAGE', false, 'true: publica la imagen en ghcr.io (credencial "ghcr"). false: la carga directo en minikube, sin registry.')
-          booleanParam('SWITCH_TRAFFIC', true, 'Solo prod: pasar el tráfico a green después del smoke test.')
+          booleanParam('SWITCH_TRAFFIC', true, 'Solo prod: pasar el tráfico al color nuevo (el que estaba inactivo) después del smoke test.')
         }
         definition {
           cpsScm {

@@ -391,11 +391,13 @@ El [`Jenkinsfile`](Jenkinsfile) automatiza todo el camino desde un commit hasta 
 
 ```
  1. Checkout ─► 2. Seguridad del código ─────────► 3. Build y tests ─► 4. Imagen Docker ──────► 5. Deploy con Helm
-    git clone      Semgrep (SAST)    ┐ en             npm ci              docker build             green ← imagen nueva
-    tag de la      Snyk (dependencias)┘ paralelo      26 tests (JUnit)    Trivy (corta si CRITICAL)  smoke test de green
-    imagen                                                                minikube o ghcr.io       switch blue → green
+    git clone      Semgrep (SAST)    ┐ en             npm ci              docker build             color inactivo ← imagen nueva
+    tag de la      Snyk (dependencias)┘ paralelo      26 tests (JUnit)    Trivy (corta si CRITICAL)  smoke test de ese color
+    imagen                                                                minikube o ghcr.io       switch del tráfico
                                                                                                     helm test (rollback si falla)
 ```
+
+**Blue/Green en el pipeline:** la imagen nueva siempre va al color que **no** recibe tráfico. Se prueba ahí y recién después se le pasa el tráfico, así que los colores se alternan en cada despliegue (blue → green → blue…). El color activo no se toca durante todo el proceso: sigue atendiendo a los jugadores y es la versión a la que se vuelve si algo falla. En el pipeline, el color es solo una "ranura": la versión nueva usa el tag de la imagen como versión y tiene el prestigio activado, caiga en blue o en green. La tabla de [diferencias entre versiones](#diferencias-entre-versiones-blue-vs-green) describe la demo manual con `shape-game:v1` y `v2`.
 
 Cada etapa escribe su propio log en Jenkins y sus reportes se archivan con el build (`reports/ci/`: `semgrep.txt`, `snyk.json`, `trivy.txt`; `reports/tests/junit.xml`). La imagen se etiqueta `versión-build-commit` (por ejemplo `shape-game:1.0.0-1-a10e070`): nunca `latest`, y siempre se sabe de qué commit salió.
 
@@ -409,7 +411,7 @@ Si alguna herramienta encuentra un problema crítico, el pipeline **se detiene e
 | 2 | Snyk ([`ci/snyk-summary.js`](ci/snyk-summary.js)) | alguna dependencia npm tiene una vulnerabilidad `critical` (o Snyk no puede analizar, por ejemplo por falta de token) |
 | 3 | `node --test` | falla algún test |
 | 4 | Trivy | la imagen tiene vulnerabilidades `CRITICAL` |
-| 5 | [`ci/deploy.sh`](ci/deploy.sh) | green no responde, no se conecta a Redis o falla `helm test`. En ese caso hace además `helm rollback` a la revisión anterior |
+| 5 | [`ci/deploy.sh`](ci/deploy.sh) | el color nuevo no responde, no se conecta a Redis o falla `helm test`. En ese caso hace además `helm rollback` a la revisión anterior |
 
 ### Levantar Jenkins y correr el pipeline
 
@@ -426,7 +428,7 @@ Jenkins corre en un contenedor (`shape-jenkins`) armado con [`jenkins/Dockerfile
 | Parámetro | Valores | Qué hace |
 | :--- | :--- | :--- |
 | `DEPLOY_ENV` | `prod` *(default)* / `dev` | `prod`: release `shape-game` en `default`, con Blue/Green. `dev`: release `shape-game-dev` en `shape-dev`, con la imagen nueva en los dos colores |
-| `SWITCH_TRAFFIC` | `true` *(default)* / `false` | Solo en prod: pasar el tráfico a green después del smoke test. Con `false`, green queda desplegada pero sin tráfico |
+| `SWITCH_TRAFFIC` | `true` *(default)* / `false` | Solo en prod: pasar el tráfico al color nuevo después del smoke test. Con `false`, la versión nueva queda desplegada pero sin tráfico |
 | `PUBLISH_IMAGE` | `false` *(default)* / `true` | `false`: la imagen se carga directo en Minikube. `true`: se publica en `ghcr.io/santmacedonio/shape-game` (requiere `GHCR_USER` y `GHCR_TOKEN` en `.env.jenkins`) |
 
 Además del botón, el job revisa el repositorio cada 5 minutos (`pollSCM`) y corre solo si hay commits nuevos. Se usa *polling* porque GitHub no puede enviarle un webhook a un Jenkins que corre en una máquina local.

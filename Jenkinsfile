@@ -27,7 +27,7 @@ pipeline {
         booleanParam(name: 'PUBLISH_IMAGE', defaultValue: false,
                description: 'true: publica la imagen en ghcr.io (credencial "ghcr"). false: la carga directo en minikube, sin registry.')
         booleanParam(name: 'SWITCH_TRAFFIC', defaultValue: true,
-               description: 'Solo prod: pasar el tráfico a green después del smoke test.')
+               description: 'Solo prod: pasar el tráfico al color nuevo (el que estaba inactivo) después del smoke test.')
     }
 
     triggers {
