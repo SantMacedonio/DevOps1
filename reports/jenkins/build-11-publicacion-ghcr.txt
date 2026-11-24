@@ -1,0 +1,1126 @@
+Started by user Administrador
+Checking out git https://github.com/SantMacedonio/DevOps1.git into /var/jenkins_home/workspace/shape-game@script/8bed97abb22a5681c70e1cfe0bd9847d850060df77212b2cf9ef3ba138754be2 to read Jenkinsfile
+The recommended git tool is: NONE
+No credentials specified
+ > git rev-parse --resolve-git-dir /var/jenkins_home/workspace/shape-game@script/8bed97abb22a5681c70e1cfe0bd9847d850060df77212b2cf9ef3ba138754be2/.git # timeout=10
+Fetching changes from the remote Git repository
+ > git config remote.origin.url https://github.com/SantMacedonio/DevOps1.git # timeout=10
+Fetching upstream changes from https://github.com/SantMacedonio/DevOps1.git
+ > git --version # timeout=10
+ > git --version # 'git version 2.47.3'
+ > git fetch --tags --force --progress -- https://github.com/SantMacedonio/DevOps1.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git rev-parse refs/remotes/origin/feature/contenedores-monitoreo-seguridad^{commit} # timeout=10
+Checking out Revision 9be4c1d514a8301346b3e7e5a2c230b52d84fbe7 (refs/remotes/origin/feature/contenedores-monitoreo-seguridad)
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f 9be4c1d514a8301346b3e7e5a2c230b52d84fbe7 # timeout=10
+Commit message: "Pipeline: corte por secretos y login a ghcr.io sin rastros"
+ > git rev-list --no-walk 9be4c1d514a8301346b3e7e5a2c230b52d84fbe7 # timeout=10
+[Pipeline] Start of Pipeline
+[Pipeline] node
+Running on Jenkins in /var/jenkins_home/workspace/shape-game
+[Pipeline] {
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] timestamps
+[Pipeline] {
+[Pipeline] ansiColor
+[Pipeline] {
+[2026-11-24T05:23:08.506Z] 
+[Pipeline] timeout
+[2026-11-24T05:23:08.565Z] Timeout set to expire in 40 min
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (1. Checkout)
+[Pipeline] script
+[Pipeline] {
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] checkout
+[2026-11-24T05:23:08.836Z] The recommended git tool is: NONE
+[2026-11-24T05:23:08.836Z] No credentials specified
+[2026-11-24T05:23:08.837Z] Cloning the remote Git repository
+[2026-11-24T05:23:08.837Z] Cloning repository https://github.com/SantMacedonio/DevOps1.git
+[2026-11-24T05:23:08.838Z]  > git init /var/jenkins_home/workspace/shape-game # timeout=10
+[2026-11-24T05:23:08.847Z] Fetching upstream changes from https://github.com/SantMacedonio/DevOps1.git
+[2026-11-24T05:23:08.847Z]  > git --version # timeout=10
+[2026-11-24T05:23:08.851Z]  > git --version # 'git version 2.47.3'
+[2026-11-24T05:23:08.851Z]  > git fetch --tags --force --progress -- https://github.com/SantMacedonio/DevOps1.git +refs/heads/*:refs/remotes/origin/* # timeout=10
+[2026-11-24T05:23:09.787Z]  > git config remote.origin.url https://github.com/SantMacedonio/DevOps1.git # timeout=10
+[2026-11-24T05:23:09.793Z]  > git config --add remote.origin.fetch +refs/heads/*:refs/remotes/origin/* # timeout=10
+[2026-11-24T05:23:09.806Z] Avoid second fetch
+[2026-11-24T05:23:09.806Z]  > git rev-parse refs/remotes/origin/feature/contenedores-monitoreo-seguridad^{commit} # timeout=10
+[2026-11-24T05:23:09.814Z] Checking out Revision 9be4c1d514a8301346b3e7e5a2c230b52d84fbe7 (refs/remotes/origin/feature/contenedores-monitoreo-seguridad)
+[2026-11-24T05:23:09.814Z]  > git config core.sparsecheckout # timeout=10
+[2026-11-24T05:23:09.827Z]  > git checkout -f 9be4c1d514a8301346b3e7e5a2c230b52d84fbe7 # timeout=10
+[2026-11-24T05:23:09.861Z] Commit message: "Pipeline: corte por secretos y login a ghcr.io sin rastros"
+[Pipeline] sh
+[2026-11-24T05:23:10.154Z] + echo Repositorio clonado:
+[2026-11-24T05:23:10.154Z] Repositorio clonado:
+[2026-11-24T05:23:10.154Z] + git log -1 --format=  Commit:  %H%n  Autor:   %an%n  Fecha:   %ad%n  Mensaje: %s
+[2026-11-24T05:23:10.154Z]   Commit:  9be4c1d514a8301346b3e7e5a2c230b52d84fbe7
+[2026-11-24T05:23:10.154Z]   Autor:   SantMacedonio
+[2026-11-24T05:23:10.154Z]   Fecha:   Tue Nov 24 02:13:52 2026 -0300
+[2026-11-24T05:23:10.154Z]   Mensaje: Pipeline: corte por secretos y login a ghcr.io sin rastros
+[2026-11-24T05:23:10.154Z] + mkdir -p reports/ci
+[Pipeline] script
+[Pipeline] {
+[Pipeline] sh
+[2026-11-24T05:23:10.467Z] + git rev-parse --short HEAD
+[Pipeline] sh
+[2026-11-24T05:23:10.744Z] + node -p require('./package.json').version
+[Pipeline] echo
+[2026-11-24T05:23:10.813Z] Imagen a construir: ghcr.io/santmacedonio/shape-game:1.0.0-11-9be4c1d
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (2. Seguridad del código)
+[Pipeline] parallel
+[Pipeline] { (Branch: Semgrep (SAST))
+[Pipeline] { (Branch: Snyk (dependencias))
+[Pipeline] stage
+[Pipeline] { (Semgrep (SAST))
+[Pipeline] stage
+[Pipeline] { (Snyk (dependencias))
+[Pipeline] script
+[Pipeline] {
+[Pipeline] script
+[Pipeline] {
+[Pipeline] }
+[Pipeline] withCredentials
+[2026-11-24T05:23:11.298Z] Masking supported pattern matches of $SNYK_TOKEN
+[Pipeline] // script
+[Pipeline] {
+[Pipeline] sh
+[Pipeline] sh
+[2026-11-24T05:23:11.622Z] + semgrep --version
+[2026-11-24T05:23:11.661Z] + snyk --version
+[2026-11-24T05:23:12.212Z] 1.1309.0
+[2026-11-24T05:23:12.212Z] + snyk test --severity-threshold=critical --json-file-output=reports/ci/snyk.json
+[2026-11-24T05:23:14.108Z] 1.186.0
+[2026-11-24T05:23:14.359Z] + semgrep scan --config p/javascript --config p/nodejs --config p/expressjs --config p/xss --config p/owasp-top-ten --config p/security-audit --config p/secrets --config p/dockerfile --config p/kubernetes --metrics=off --no-git-ignore --exclude node_modules --exclude reports --exclude .npm-cache --exclude k8s/security/tests --json-output=reports/ci/semgrep.json --text-output=reports/ci/semgrep.txt
+[2026-11-24T05:23:20.239Z] 
+[2026-11-24T05:23:20.239Z] Testing /var/jenkins_home/workspace/shape-game...
+[2026-11-24T05:23:20.239Z] 
+[2026-11-24T05:23:20.239Z] Organization:      santiagoaurrecochea3012
+[2026-11-24T05:23:20.239Z] Package manager:   npm
+[2026-11-24T05:23:20.239Z] Target file:       package-lock.json
+[2026-11-24T05:23:20.239Z] Project name:      k8s-shape-popper
+[2026-11-24T05:23:20.239Z] Open source:       no
+[2026-11-24T05:23:20.239Z] Project path:      /var/jenkins_home/workspace/shape-game
+[2026-11-24T05:23:20.239Z] Licenses:          enabled
+[2026-11-24T05:23:20.239Z] 
+[2026-11-24T05:23:20.239Z] ✔ Tested 81 dependencies for known issues, no vulnerable paths found.
+[2026-11-24T05:23:20.239Z] 
+[2026-11-24T05:23:20.239Z] 
+[Pipeline] sh
+[2026-11-24T05:23:20.781Z] + node ci/snyk-summary.js reports/ci/snyk.json
+[2026-11-24T05:23:20.781Z] ============ Snyk (dependencias npm) ============
+[2026-11-24T05:23:20.781Z] Proyecto: k8s-shape-popper   Dependencias analizadas: 81
+[2026-11-24T05:23:20.781Z] Umbral de corte: critical
+[2026-11-24T05:23:20.781Z] Vulnerabilidades: critical=0  high=0  medium=0  low=0
+[Pipeline] }
+[2026-11-24T05:23:20.842Z]                
+[2026-11-24T05:23:20.842Z]                
+[2026-11-24T05:23:20.842Z] ┌─────────────┐
+[2026-11-24T05:23:20.842Z] │ Scan Status │
+[2026-11-24T05:23:20.842Z] └─────────────┘
+[2026-11-24T05:23:20.842Z]   Scanning 85 files with 740 Code rules:
+[2026-11-24T05:23:20.842Z]                                                                                                                         
+[2026-11-24T05:23:20.842Z]   Language      Rules   Files          Origin      Rules                                                                
+[2026-11-24T05:23:20.842Z]  ─────────────────────────────        ───────────────────                                                               
+[2026-11-24T05:23:20.842Z]   <multilang>      61      57          Community     740                                                                
+[2026-11-24T05:23:20.842Z]   yaml             32      24                                                                                           
+[2026-11-24T05:23:20.842Z]   bash              1      16                                                                                           
+[2026-11-24T05:23:20.842Z]   js               83       9                                                                                           
+[2026-11-24T05:23:20.842Z]   dockerfile        7       3                                                                                           
+[2026-11-24T05:23:20.842Z]   json              3       3                                                                                           
+[2026-11-24T05:23:20.842Z]   php              22       1                                                                                           
+[2026-11-24T05:23:20.842Z]   html              1       1                                                                                           
+[2026-11-24T05:23:20.842Z]                                                                                                                         
+[Pipeline] // withCredentials
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[2026-11-24T05:23:24.071Z]                 
+[2026-11-24T05:23:24.071Z]                 
+[2026-11-24T05:23:24.071Z] ┌──────────────┐
+[2026-11-24T05:23:24.071Z] │ Scan Summary │
+[2026-11-24T05:23:24.071Z] └──────────────┘
+[2026-11-24T05:23:24.071Z] ✅ Scan completed successfully.
+[2026-11-24T05:23:24.071Z]  • Findings: 0 (0 blocking)
+[2026-11-24T05:23:24.071Z]  • Rules run: 209
+[2026-11-24T05:23:24.071Z]  • Targets scanned: 85
+[2026-11-24T05:23:24.071Z]  • Parsed lines: ~99.9%
+[2026-11-24T05:23:24.071Z]  • Scan skipped: 
+[2026-11-24T05:23:24.071Z]    ◦ Matching --exclude patterns: 2
+[2026-11-24T05:23:24.071Z]    ◦ Files matching .semgrepignore patterns: 3
+[2026-11-24T05:23:24.071Z]  • For a detailed list of skipped files and lines, run semgrep with the --verbose flag
+[2026-11-24T05:23:24.071Z] Ran 209 rules on 85 files: 0 findings.
+[2026-11-24T05:23:24.071Z] (need more rules? `semgrep login` for additional free Semgrep Registry rules)
+[2026-11-24T05:23:24.071Z] 
+[2026-11-24T05:23:24.071Z] If Semgrep missed a finding, please send us feedback to let us know!
+[2026-11-24T05:23:24.071Z] See https://semgrep.dev/docs/reporting-false-negatives/
+[Pipeline] sh
+[2026-11-24T05:23:24.357Z] + node ci/semgrep-gate.js reports/ci/semgrep.json
+[2026-11-24T05:23:24.357Z] ================ Semgrep (SAST) ================
+[2026-11-24T05:23:24.357Z] Archivos analizados: 85
+[2026-11-24T05:23:24.357Z] Hallazgos: ERROR=0  WARNING=0  INFO=0
+[2026-11-24T05:23:24.357Z] Avisos del análisis (archivos que no se pudieron leer): 9
+[2026-11-24T05:23:24.357Z] 
+[2026-11-24T05:23:24.357Z] [OK] Sin hallazgos de severidad ERROR
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // parallel
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (3. Build y tests)
+[Pipeline] script
+[Pipeline] {
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] sh
+[2026-11-24T05:23:24.960Z] + node --version
+[2026-11-24T05:23:24.960Z] v22.23.5
+[2026-11-24T05:23:24.960Z] + npm ci --no-audit --no-fund
+[2026-11-24T05:23:27.443Z] 
+[2026-11-24T05:23:27.443Z] added 82 packages in 3s
+[2026-11-24T05:23:27.443Z] + npm run test:ci
+[2026-11-24T05:23:27.693Z] 
+[2026-11-24T05:23:27.693Z] > k8s-shape-popper@1.0.0 pretest:ci
+[2026-11-24T05:23:27.693Z] > node -e "require('fs').mkdirSync('reports/tests',{recursive:true})"
+[2026-11-24T05:23:27.693Z] 
+[2026-11-24T05:23:27.693Z] 
+[2026-11-24T05:23:27.693Z] > k8s-shape-popper@1.0.0 test:ci
+[2026-11-24T05:23:27.693Z] > node --test --test-force-exit --test-reporter=spec --test-reporter-destination=stdout --test-reporter=junit --test-reporter-destination=reports/tests/junit.xml "tests/**/*.test.js"
+[2026-11-24T05:23:27.693Z] 
+[2026-11-24T05:23:28.251Z] [Redis] Disabled (REDIS_ENABLED=false): using in-memory store only
+[2026-11-24T05:23:28.251Z] ▶ probes de Kubernetes
+[2026-11-24T05:23:28.251Z]   ✔ GET /healthz responde 200 "healthy" (66.097272ms)
+[2026-11-24T05:23:28.251Z]   ✔ GET /readyz informa el modo memoria cuando no hay Redis (6.266567ms)
+[2026-11-24T05:23:28.251Z] ✔ probes de Kubernetes (73.4059ms)
+[2026-11-24T05:23:28.251Z] ▶ frontend y headers de seguridad
+[2026-11-24T05:23:28.251Z]   ✔ GET / sirve el juego (16.628074ms)
+[2026-11-24T05:23:28.251Z]   ✔ incluye CSP estricta y no expone X-Powered-By (7.409134ms)
+[2026-11-24T05:23:28.251Z] ✔ frontend y headers de seguridad (24.58554ms)
+[2026-11-24T05:23:28.251Z] ▶ API del juego
+[2026-11-24T05:23:28.251Z]   ✔ GET /api/version: Blue no ofrece mejoras exclusivas de Green (12.559936ms)
+[2026-11-24T05:23:28.251Z]   ✔ rechaza playerId inválidos (400) (36.18422ms)
+[2026-11-24T05:23:28.251Z]   ✔ un jugador nuevo empieza con 0 puntos (7.384232ms)
+[2026-11-24T05:23:28.251Z]   ✔ no se puede comprar sin puntos suficientes (400) (13.911515ms)
+[2026-11-24T05:23:28.251Z]   ✔ guardar y comprar: descuenta el costo y sube el nivel (12.364125ms)
+[2026-11-24T05:23:28.502Z]   ✔ rechaza claves heredadas como "constructor" o "__proto__" (400) (19.697454ms)
+[2026-11-24T05:23:28.502Z]   ✔ el prestigio está bloqueado en Blue (403) (4.556767ms)
+[2026-11-24T05:23:28.502Z] PayloadTooLargeError: request entity too large
+[2026-11-24T05:23:28.502Z]     at readStream (/var/jenkins_home/workspace/shape-game/node_modules/raw-body/index.js:163:17)
+[2026-11-24T05:23:28.502Z]     at getRawBody (/var/jenkins_home/workspace/shape-game/node_modules/raw-body/index.js:116:12)
+[2026-11-24T05:23:28.502Z]     at read (/var/jenkins_home/workspace/shape-game/node_modules/body-parser/lib/read.js:80:3)
+[2026-11-24T05:23:28.502Z]     at jsonParser (/var/jenkins_home/workspace/shape-game/node_modules/body-parser/lib/types/json.js:142:5)
+[2026-11-24T05:23:28.502Z]     at Layer.handle [as handle_request] (/var/jenkins_home/workspace/shape-game/node_modules/express/lib/router/layer.js:95:5)
+[2026-11-24T05:23:28.502Z]     at trim_prefix (/var/jenkins_home/workspace/shape-game/node_modules/express/lib/router/index.js:328:13)
+[2026-11-24T05:23:28.502Z]     at /var/jenkins_home/workspace/shape-game/node_modules/express/lib/router/index.js:286:9
+[2026-11-24T05:23:28.502Z]     at Function.process_params (/var/jenkins_home/workspace/shape-game/node_modules/express/lib/router/index.js:346:12)
+[2026-11-24T05:23:28.502Z]     at next (/var/jenkins_home/workspace/shape-game/node_modules/express/lib/router/index.js:280:10)
+[2026-11-24T05:23:28.502Z]     at internalNext (/var/jenkins_home/workspace/shape-game/node_modules/helmet/index.cjs:558:6)
+[2026-11-24T05:23:28.502Z]   ✔ rechaza bodies de más de 100 KB (413) (39.511914ms)
+[2026-11-24T05:23:28.502Z] ✔ API del juego (147.561845ms)
+[2026-11-24T05:23:28.502Z] ▶ métricas de Prometheus
+[2026-11-24T05:23:28.502Z]   ✔ GET /metrics expone métricas HTTP, de proceso y de negocio (21.645868ms)
+[2026-11-24T05:23:28.502Z] ✔ métricas de Prometheus (22.038891ms)
+[2026-11-24T05:23:28.502Z] ▶ getUpgradeCost
+[2026-11-24T05:23:28.502Z]   ✔ el costo base es el del nivel 0 (1.022359ms)
+[2026-11-24T05:23:28.502Z]   ✔ el costo crece con el multiplicador y se redondea hacia abajo (0.310818ms)
+[2026-11-24T05:23:28.502Z]   ✔ una mejora inexistente cuesta Infinity (no se puede comprar) (0.290117ms)
+[2026-11-24T05:23:28.502Z]   ✔ al llegar al nivel máximo el costo es Infinity (1.37408ms)
+[2026-11-24T05:23:28.502Z] ✔ getUpgradeCost (4.395457ms)
+[2026-11-24T05:23:28.502Z] ▶ calculatePrestigeShards
+[2026-11-24T05:23:28.502Z]   ✔ no da fragmentos por debajo de los mínimos (500 de energía y 30 figuras) (0.356521ms)
+[2026-11-24T05:23:28.502Z]   ✔ en el mínimo exacto da 1 fragmento (0.16491ms)
+[2026-11-24T05:23:28.502Z]   ✔ crece con la raíz cuadrada de la energía (0.278216ms)
+[2026-11-24T05:23:28.502Z] ✔ calculatePrestigeShards (1.249374ms)
+[2026-11-24T05:23:28.502Z] ▶ createInitialState
+[2026-11-24T05:23:28.502Z]   ✔ un jugador nuevo empieza sin puntos, en el nivel 0 y sin prestigio (0.415624ms)
+[2026-11-24T05:23:28.502Z] ✔ createInitialState (0.607935ms)
+[2026-11-24T05:23:28.502Z] ▶ sanitizeState
+[2026-11-24T05:23:28.502Z]   ✔ sin estado previo devuelve el estado inicial (1.308677ms)
+[2026-11-24T05:23:28.502Z]   ✔ conserva los puntos y completa los campos faltantes (0.401424ms)
+[2026-11-24T05:23:28.502Z]   ✔ migra el nombre viejo de mejora clickPower a clickDamage (0.237714ms)
+[2026-11-24T05:23:28.502Z]   ✔ en Blue (sin prestigio) quita las torretas y no aplica el multiplicador (0.225813ms)
+[2026-11-24T05:23:28.502Z]   ✔ en Green (con prestigio) aplica +10% por fragmento (0.266915ms)
+[2026-11-24T05:23:28.502Z] ✔ sanitizeState (2.846066ms)
+[2026-11-24T05:23:28.502Z] ℹ tests 26
+[2026-11-24T05:23:28.502Z] ℹ suites 8
+[2026-11-24T05:23:28.502Z] ℹ pass 26
+[2026-11-24T05:23:28.502Z] ℹ fail 0
+[2026-11-24T05:23:28.502Z] ℹ cancelled 0
+[2026-11-24T05:23:28.502Z] ℹ skipped 0
+[2026-11-24T05:23:28.502Z] ℹ todo 0
+[2026-11-24T05:23:28.502Z] ℹ duration_ms 673.818976
+Post stage
+[Pipeline] junit
+[2026-11-24T05:23:28.554Z] Recording test results
+[2026-11-24T05:23:28.570Z] [Checks API] No suitable checks publisher found.
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (4. Imagen Docker)
+[Pipeline] script
+[Pipeline] {
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] sh
+[2026-11-24T05:23:29.075Z] + git rev-parse HEAD
+[2026-11-24T05:23:29.076Z] + date -u +%Y-%m-%dT%H:%M:%SZ
+[2026-11-24T05:23:29.076Z] + docker build --label org.opencontainers.image.revision=9be4c1d514a8301346b3e7e5a2c230b52d84fbe7 --label org.opencontainers.image.created=2026-11-24T05:23:28Z --label org.opencontainers.image.source=https://github.com/SantMacedonio/DevOps1 --label org.opencontainers.image.version=1.0.0-11-9be4c1d -t ghcr.io/santmacedonio/shape-game:1.0.0-11-9be4c1d .
+[2026-11-24T05:23:29.628Z] #0 building with "default" instance using docker driver
+[2026-11-24T05:23:29.628Z] 
+[2026-11-24T05:23:29.628Z] #1 [internal] load build definition from Dockerfile
+[2026-11-24T05:23:29.628Z] #1 transferring dockerfile: 2.56kB done
+[2026-11-24T05:23:29.628Z] #1 DONE 0.0s
+[2026-11-24T05:23:29.628Z] 
+[2026-11-24T05:23:29.628Z] #2 resolve image config for docker-image://docker.io/docker/dockerfile:1
+[2026-11-24T05:23:29.878Z] #2 DONE 0.5s
+[2026-11-24T05:23:30.129Z] 
+[2026-11-24T05:23:30.129Z] #3 docker-image://docker.io/docker/dockerfile:1@sha256:572cebbc2b15e6f84c077742952674889cb63cd5e9b80abdffcbe587b6f19183
+[2026-11-24T05:23:30.129Z] #3 resolve docker.io/docker/dockerfile:1@sha256:572cebbc2b15e6f84c077742952674889cb63cd5e9b80abdffcbe587b6f19183 0.0s done
+[2026-11-24T05:23:30.129Z] #3 CACHED
+[2026-11-24T05:23:30.129Z] 
+[2026-11-24T05:23:30.129Z] #4 [internal] load metadata for docker.io/library/node:22.23.5-alpine3.24
+[2026-11-24T05:23:30.682Z] #4 ...
+[2026-11-24T05:23:30.682Z] 
+[2026-11-24T05:23:30.682Z] #5 [internal] load metadata for docker.io/library/alpine:3.24.4
+[2026-11-24T05:23:30.682Z] #5 DONE 0.6s
+[2026-11-24T05:23:30.682Z] 
+[2026-11-24T05:23:30.682Z] #4 [internal] load metadata for docker.io/library/node:22.23.5-alpine3.24
+[2026-11-24T05:23:30.682Z] #4 DONE 0.6s
+[2026-11-24T05:23:30.682Z] 
+[2026-11-24T05:23:30.682Z] #6 [internal] load .dockerignore
+[2026-11-24T05:23:30.682Z] #6 transferring context: 217B 0.0s done
+[2026-11-24T05:23:30.682Z] #6 DONE 0.1s
+[2026-11-24T05:23:31.252Z] 
+[2026-11-24T05:23:31.252Z] #7 [internal] load build context
+[2026-11-24T05:23:31.252Z] #7 transferring context: 119.01kB 0.2s done
+[2026-11-24T05:23:31.252Z] #7 DONE 0.2s
+[2026-11-24T05:23:31.252Z] 
+[2026-11-24T05:23:31.252Z] #8 [runner 1/7] FROM docker.io/library/alpine:3.24.4@sha256:f59abe656b692d901e184be3445e084786602108599d2a51d229c0f5a48c71bf
+[2026-11-24T05:23:31.252Z] #8 resolve docker.io/library/alpine:3.24.4@sha256:f59abe656b692d901e184be3445e084786602108599d2a51d229c0f5a48c71bf 0.2s done
+[2026-11-24T05:23:31.252Z] #8 DONE 0.2s
+[2026-11-24T05:23:31.252Z] 
+[2026-11-24T05:23:31.252Z] #9 [deps 1/4] FROM docker.io/library/node:22.23.5-alpine3.24@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a
+[2026-11-24T05:23:31.252Z] #9 resolve docker.io/library/node:22.23.5-alpine3.24@sha256:1314fb30ec37592d5845e5a160d522c0e680972aa534549940b8d73bde88481a 0.2s done
+[2026-11-24T05:23:31.252Z] #9 DONE 0.2s
+[2026-11-24T05:23:31.502Z] 
+[2026-11-24T05:23:31.502Z] #10 [runner 2/7] RUN apk upgrade --no-cache     && apk add --no-cache libstdc++ libgcc     && addgroup -g 1000 -S node     && adduser -u 1000 -S -G node -H -h /app node
+[2026-11-24T05:23:31.502Z] #10 CACHED
+[2026-11-24T05:23:31.502Z] 
+[2026-11-24T05:23:31.502Z] #11 [deps 3/4] COPY package.json package-lock.json ./
+[2026-11-24T05:23:31.502Z] #11 CACHED
+[2026-11-24T05:23:31.502Z] 
+[2026-11-24T05:23:31.502Z] #12 [deps 4/4] RUN npm ci --omit=dev --no-audit --no-fund     && npm cache clean --force
+[2026-11-24T05:23:31.502Z] #12 CACHED
+[2026-11-24T05:23:31.502Z] 
+[2026-11-24T05:23:31.502Z] #13 [runner 4/7] WORKDIR /app
+[2026-11-24T05:23:31.502Z] #13 CACHED
+[2026-11-24T05:23:31.502Z] 
+[2026-11-24T05:23:31.502Z] #14 [runner 3/7] COPY --from=deps /usr/local/bin/node /usr/local/bin/node
+[2026-11-24T05:23:31.502Z] #14 CACHED
+[2026-11-24T05:23:31.502Z] 
+[2026-11-24T05:23:31.502Z] #15 [deps 2/4] WORKDIR /app
+[2026-11-24T05:23:31.502Z] #15 CACHED
+[2026-11-24T05:23:31.502Z] 
+[2026-11-24T05:23:31.502Z] #16 [runner 5/7] COPY --from=deps /app/node_modules ./node_modules
+[2026-11-24T05:23:31.502Z] #16 CACHED
+[2026-11-24T05:23:31.502Z] 
+[2026-11-24T05:23:31.502Z] #17 [runner 6/7] COPY package.json ./
+[2026-11-24T05:23:31.502Z] #17 CACHED
+[2026-11-24T05:23:31.502Z] 
+[2026-11-24T05:23:31.502Z] #18 [runner 7/7] COPY src/ ./src/
+[2026-11-24T05:23:31.502Z] #18 CACHED
+[2026-11-24T05:23:31.502Z] 
+[2026-11-24T05:23:31.502Z] #19 exporting to image
+[2026-11-24T05:23:31.502Z] #19 exporting layers 0.0s done
+[2026-11-24T05:23:31.502Z] #19 exporting manifest sha256:77a87eea6670daafdde86e3646ad7de353e2b328ac5047e326daa8bf4f34a636 0.1s done
+[2026-11-24T05:23:31.502Z] #19 exporting config sha256:0729d6219c59e0b5f8899504f38a2b928869f9a707a10c17ae5425a6a78e236a 0.0s done
+[2026-11-24T05:23:31.502Z] #19 exporting attestation manifest sha256:26a670bdff9ec50791839f3801e9241c55691f25d293ee7e65285d0409284db5 0.0s done
+[2026-11-24T05:23:31.502Z] #19 exporting manifest list sha256:d7af97bd32a19c1f73336463b02cf811274ad5f83feaf1d3b85e178ed2b5d057 0.0s done
+[2026-11-24T05:23:31.502Z] #19 naming to ghcr.io/santmacedonio/shape-game:1.0.0-11-9be4c1d 0.0s done
+[2026-11-24T05:23:31.502Z] #19 unpacking to ghcr.io/santmacedonio/shape-game:1.0.0-11-9be4c1d
+[2026-11-24T05:23:32.419Z] #19 unpacking to ghcr.io/santmacedonio/shape-game:1.0.0-11-9be4c1d 0.8s done
+[2026-11-24T05:23:32.676Z] #19 DONE 1.1s
+[2026-11-24T05:23:32.676Z] + docker image ls ghcr.io/santmacedonio/shape-game:1.0.0-11-9be4c1d
+[2026-11-24T05:23:32.928Z] IMAGE                                               ID             DISK USAGE   CONTENT SIZE   EXTRA
+[2026-11-24T05:23:32.928Z] ghcr.io/santmacedonio/shape-game:1.0.0-11-9be4c1d   d7af97bd32a1        217MB         57.6MB        
+[Pipeline] script
+[Pipeline] {
+[Pipeline] sh
+[2026-11-24T05:23:33.304Z] + trivy image --quiet --scanners vuln,secret --format table --output reports/ci/trivy.txt ghcr.io/santmacedonio/shape-game:1.0.0-11-9be4c1d
+[2026-11-24T05:23:33.556Z] + cat reports/ci/trivy.txt
+[2026-11-24T05:23:33.556Z] 
+[2026-11-24T05:23:33.556Z] Report Summary
+[2026-11-24T05:23:33.556Z] 
+[2026-11-24T05:23:33.556Z] ┌───────────────────────────────────────────────────────────────────┬──────────┬─────────────────┬─────────┐
+[2026-11-24T05:23:33.556Z] │                              Target                               │   Type   │ Vulnerabilities │ Secrets │
+[2026-11-24T05:23:33.556Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.556Z] │ ghcr.io/santmacedonio/shape-game:1.0.0-11-9be4c1d (alpine 3.24.4) │  alpine  │        0        │    -    │
+[2026-11-24T05:23:33.556Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.556Z] │ app/node_modules/@ioredis/commands/package.json                   │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.556Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.556Z] │ app/node_modules/@opentelemetry/api/package.json                  │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.556Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.556Z] │ app/node_modules/@prometheus-io/client/package.json               │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.556Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.556Z] │ app/node_modules/accepts/package.json                             │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.556Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.556Z] │ app/node_modules/array-flatten/package.json                       │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.556Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/bintrees/package.json                            │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/body-parser/package.json                         │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/bytes/package.json                               │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/call-bind-apply-helpers/package.json             │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/call-bound/package.json                          │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/cluster-key-slot/package.json                    │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/content-disposition/package.json                 │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/content-type/package.json                        │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/cookie-signature/package.json                    │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/cookie/package.json                              │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/debug/package.json                               │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/denque/package.json                              │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/depd/package.json                                │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/destroy/package.json                             │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/dunder-proto/package.json                        │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/ee-first/package.json                            │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/encodeurl/package.json                           │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/es-define-property/package.json                  │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/es-errors/package.json                           │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/es-object-atoms/package.json                     │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/escape-html/package.json                         │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/etag/package.json                                │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/express/package.json                             │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/finalhandler/package.json                        │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/forwarded/package.json                           │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/fresh/package.json                               │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/function-bind/package.json                       │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/get-intrinsic/package.json                       │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/get-proto/package.json                           │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/gopd/package.json                                │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/has-symbols/package.json                         │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/hasown/package.json                              │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/helmet/package.json                              │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/http-errors/package.json                         │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/iconv-lite/package.json                          │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/inherits/package.json                            │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/ioredis/node_modules/debug/package.json          │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/ioredis/node_modules/ms/package.json             │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/ioredis/package.json                             │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/ipaddr.js/package.json                           │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/math-intrinsics/package.json                     │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/media-typer/package.json                         │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/merge-descriptors/package.json                   │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.557Z] │ app/node_modules/methods/package.json                             │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.557Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.558Z] │ app/node_modules/mime-db/package.json                             │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.558Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.558Z] │ app/node_modules/mime-types/package.json                          │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.558Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.558Z] │ app/node_modules/mime/package.json                                │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.558Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.558Z] │ app/node_modules/ms/package.json                                  │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.558Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.558Z] │ app/node_modules/negotiator/package.json                          │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.558Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.558Z] │ app/node_modules/object-inspect/package.json                      │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.558Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.558Z] │ app/node_modules/on-finished/package.json                         │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.558Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.558Z] │ app/node_modules/parseurl/package.json                            │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.558Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.558Z] │ app/node_modules/path-to-regexp/package.json                      │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.558Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.558Z] │ app/node_modules/proxy-addr/package.json                          │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.558Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.558Z] │ app/node_modules/qs/package.json                                  │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.558Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.558Z] │ app/node_modules/range-parser/package.json                        │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.558Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.558Z] │ app/node_modules/raw-body/package.json                            │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.558Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.558Z] │ app/node_modules/redis-errors/package.json                        │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.558Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.558Z] │ app/node_modules/redis-parser/package.json                        │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.559Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.559Z] │ app/node_modules/safe-buffer/package.json                         │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.559Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.559Z] │ app/node_modules/safer-buffer/package.json                        │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.559Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.559Z] │ app/node_modules/send/node_modules/ms/package.json                │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.559Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.559Z] │ app/node_modules/send/package.json                                │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.559Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.559Z] │ app/node_modules/serve-static/package.json                        │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.559Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.559Z] │ app/node_modules/setprototypeof/package.json                      │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.559Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.559Z] │ app/node_modules/side-channel-list/package.json                   │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.559Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.559Z] │ app/node_modules/side-channel-map/package.json                    │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.559Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.559Z] │ app/node_modules/side-channel-weakmap/package.json                │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.559Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.559Z] │ app/node_modules/side-channel/package.json                        │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.559Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.559Z] │ app/node_modules/standard-as-callback/package.json                │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.559Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.559Z] │ app/node_modules/statuses/package.json                            │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.559Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.559Z] │ app/node_modules/tdigest/package.json                             │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.559Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.559Z] │ app/node_modules/toidentifier/package.json                        │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.559Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.559Z] │ app/node_modules/type-is/package.json                             │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.559Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.559Z] │ app/node_modules/unpipe/package.json                              │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.559Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.559Z] │ app/node_modules/utils-merge/package.json                         │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.559Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.559Z] │ app/node_modules/vary/package.json                                │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.559Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┼─────────┤
+[2026-11-24T05:23:33.559Z] │ app/package.json                                                  │ node-pkg │        0        │    -    │
+[2026-11-24T05:23:33.559Z] └───────────────────────────────────────────────────────────────────┴──────────┴─────────────────┴─────────┘
+[2026-11-24T05:23:33.559Z] Legend:
+[2026-11-24T05:23:33.559Z] - '-': Not scanned
+[2026-11-24T05:23:33.559Z] - '0': Clean (no security findings detected)
+[2026-11-24T05:23:33.559Z] 
+[Pipeline] sh
+[2026-11-24T05:23:34.102Z] + trivy image --quiet --scanners vuln --severity CRITICAL --exit-code 1 ghcr.io/santmacedonio/shape-game:1.0.0-11-9be4c1d
+[2026-11-24T05:23:34.352Z] 
+[2026-11-24T05:23:34.352Z] Report Summary
+[2026-11-24T05:23:34.352Z] 
+[2026-11-24T05:23:34.352Z] ┌───────────────────────────────────────────────────────────────────┬──────────┬─────────────────┐
+[2026-11-24T05:23:34.352Z] │                              Target                               │   Type   │ Vulnerabilities │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ ghcr.io/santmacedonio/shape-game:1.0.0-11-9be4c1d (alpine 3.24.4) │  alpine  │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/@ioredis/commands/package.json                   │ node-pkg │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/@opentelemetry/api/package.json                  │ node-pkg │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/@prometheus-io/client/package.json               │ node-pkg │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/accepts/package.json                             │ node-pkg │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/array-flatten/package.json                       │ node-pkg │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/bintrees/package.json                            │ node-pkg │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/body-parser/package.json                         │ node-pkg │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/bytes/package.json                               │ node-pkg │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/call-bind-apply-helpers/package.json             │ node-pkg │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/call-bound/package.json                          │ node-pkg │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/cluster-key-slot/package.json                    │ node-pkg │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/content-disposition/package.json                 │ node-pkg │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/content-type/package.json                        │ node-pkg │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/cookie-signature/package.json                    │ node-pkg │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/cookie/package.json                              │ node-pkg │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/debug/package.json                               │ node-pkg │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/denque/package.json                              │ node-pkg │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/depd/package.json                                │ node-pkg │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/destroy/package.json                             │ node-pkg │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/dunder-proto/package.json                        │ node-pkg │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/ee-first/package.json                            │ node-pkg │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/encodeurl/package.json                           │ node-pkg │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/es-define-property/package.json                  │ node-pkg │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/es-errors/package.json                           │ node-pkg │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/es-object-atoms/package.json                     │ node-pkg │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/escape-html/package.json                         │ node-pkg │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/etag/package.json                                │ node-pkg │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/express/package.json                             │ node-pkg │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/finalhandler/package.json                        │ node-pkg │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/forwarded/package.json                           │ node-pkg │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/fresh/package.json                               │ node-pkg │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/function-bind/package.json                       │ node-pkg │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/get-intrinsic/package.json                       │ node-pkg │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/get-proto/package.json                           │ node-pkg │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/gopd/package.json                                │ node-pkg │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/has-symbols/package.json                         │ node-pkg │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/hasown/package.json                              │ node-pkg │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/helmet/package.json                              │ node-pkg │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/http-errors/package.json                         │ node-pkg │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/iconv-lite/package.json                          │ node-pkg │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/inherits/package.json                            │ node-pkg │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/ioredis/node_modules/debug/package.json          │ node-pkg │        0        │
+[2026-11-24T05:23:34.352Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.352Z] │ app/node_modules/ioredis/node_modules/ms/package.json             │ node-pkg │        0        │
+[2026-11-24T05:23:34.353Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.353Z] │ app/node_modules/ioredis/package.json                             │ node-pkg │        0        │
+[2026-11-24T05:23:34.353Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.353Z] │ app/node_modules/ipaddr.js/package.json                           │ node-pkg │        0        │
+[2026-11-24T05:23:34.353Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.353Z] │ app/node_modules/math-intrinsics/package.json                     │ node-pkg │        0        │
+[2026-11-24T05:23:34.353Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.353Z] │ app/node_modules/media-typer/package.json                         │ node-pkg │        0        │
+[2026-11-24T05:23:34.353Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.353Z] │ app/node_modules/merge-descriptors/package.json                   │ node-pkg │        0        │
+[2026-11-24T05:23:34.353Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.353Z] │ app/node_modules/methods/package.json                             │ node-pkg │        0        │
+[2026-11-24T05:23:34.353Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.353Z] │ app/node_modules/mime-db/package.json                             │ node-pkg │        0        │
+[2026-11-24T05:23:34.353Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.353Z] │ app/node_modules/mime-types/package.json                          │ node-pkg │        0        │
+[2026-11-24T05:23:34.353Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.353Z] │ app/node_modules/mime/package.json                                │ node-pkg │        0        │
+[2026-11-24T05:23:34.353Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.353Z] │ app/node_modules/ms/package.json                                  │ node-pkg │        0        │
+[2026-11-24T05:23:34.353Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.353Z] │ app/node_modules/negotiator/package.json                          │ node-pkg │        0        │
+[2026-11-24T05:23:34.353Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.353Z] │ app/node_modules/object-inspect/package.json                      │ node-pkg │        0        │
+[2026-11-24T05:23:34.353Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.353Z] │ app/node_modules/on-finished/package.json                         │ node-pkg │        0        │
+[2026-11-24T05:23:34.353Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.353Z] │ app/node_modules/parseurl/package.json                            │ node-pkg │        0        │
+[2026-11-24T05:23:34.353Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.353Z] │ app/node_modules/path-to-regexp/package.json                      │ node-pkg │        0        │
+[2026-11-24T05:23:34.353Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.353Z] │ app/node_modules/proxy-addr/package.json                          │ node-pkg │        0        │
+[2026-11-24T05:23:34.353Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.353Z] │ app/node_modules/qs/package.json                                  │ node-pkg │        0        │
+[2026-11-24T05:23:34.353Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.353Z] │ app/node_modules/range-parser/package.json                        │ node-pkg │        0        │
+[2026-11-24T05:23:34.353Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.353Z] │ app/node_modules/raw-body/package.json                            │ node-pkg │        0        │
+[2026-11-24T05:23:34.353Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.353Z] │ app/node_modules/redis-errors/package.json                        │ node-pkg │        0        │
+[2026-11-24T05:23:34.353Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.353Z] │ app/node_modules/redis-parser/package.json                        │ node-pkg │        0        │
+[2026-11-24T05:23:34.353Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.353Z] │ app/node_modules/safe-buffer/package.json                         │ node-pkg │        0        │
+[2026-11-24T05:23:34.353Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.353Z] │ app/node_modules/safer-buffer/package.json                        │ node-pkg │        0        │
+[2026-11-24T05:23:34.353Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.353Z] │ app/node_modules/send/node_modules/ms/package.json                │ node-pkg │        0        │
+[2026-11-24T05:23:34.353Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.353Z] │ app/node_modules/send/package.json                                │ node-pkg │        0        │
+[2026-11-24T05:23:34.353Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.353Z] │ app/node_modules/serve-static/package.json                        │ node-pkg │        0        │
+[2026-11-24T05:23:34.353Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.353Z] │ app/node_modules/setprototypeof/package.json                      │ node-pkg │        0        │
+[2026-11-24T05:23:34.353Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.353Z] │ app/node_modules/side-channel-list/package.json                   │ node-pkg │        0        │
+[2026-11-24T05:23:34.353Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.353Z] │ app/node_modules/side-channel-map/package.json                    │ node-pkg │        0        │
+[2026-11-24T05:23:34.353Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.353Z] │ app/node_modules/side-channel-weakmap/package.json                │ node-pkg │        0        │
+[2026-11-24T05:23:34.353Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.353Z] │ app/node_modules/side-channel/package.json                        │ node-pkg │        0        │
+[2026-11-24T05:23:34.353Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.353Z] │ app/node_modules/standard-as-callback/package.json                │ node-pkg │        0        │
+[2026-11-24T05:23:34.353Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.353Z] │ app/node_modules/statuses/package.json                            │ node-pkg │        0        │
+[2026-11-24T05:23:34.353Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.353Z] │ app/node_modules/tdigest/package.json                             │ node-pkg │        0        │
+[2026-11-24T05:23:34.353Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.353Z] │ app/node_modules/toidentifier/package.json                        │ node-pkg │        0        │
+[2026-11-24T05:23:34.353Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.353Z] │ app/node_modules/type-is/package.json                             │ node-pkg │        0        │
+[2026-11-24T05:23:34.353Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.353Z] │ app/node_modules/unpipe/package.json                              │ node-pkg │        0        │
+[2026-11-24T05:23:34.353Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.353Z] │ app/node_modules/utils-merge/package.json                         │ node-pkg │        0        │
+[2026-11-24T05:23:34.353Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.353Z] │ app/node_modules/vary/package.json                                │ node-pkg │        0        │
+[2026-11-24T05:23:34.353Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────────────┤
+[2026-11-24T05:23:34.353Z] │ app/package.json                                                  │ node-pkg │        0        │
+[2026-11-24T05:23:34.353Z] └───────────────────────────────────────────────────────────────────┴──────────┴─────────────────┘
+[2026-11-24T05:23:34.353Z] Legend:
+[2026-11-24T05:23:34.353Z] - '-': Not scanned
+[2026-11-24T05:23:34.353Z] - '0': Clean (no security findings detected)
+[2026-11-24T05:23:34.353Z] 
+[Pipeline] sh
+[2026-11-24T05:23:34.662Z] + trivy image --quiet --scanners secret --exit-code 1 ghcr.io/santmacedonio/shape-game:1.0.0-11-9be4c1d
+[2026-11-24T05:23:34.662Z] 
+[2026-11-24T05:23:34.662Z] Report Summary
+[2026-11-24T05:23:34.662Z] 
+[2026-11-24T05:23:34.662Z] ┌───────────────────────────────────────────────────────────────────┬──────────┬─────────┐
+[2026-11-24T05:23:34.662Z] │                              Target                               │   Type   │ Secrets │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ ghcr.io/santmacedonio/shape-game:1.0.0-11-9be4c1d (alpine 3.24.4) │  alpine  │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/@ioredis/commands/package.json                   │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/@opentelemetry/api/package.json                  │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/@prometheus-io/client/package.json               │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/accepts/package.json                             │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/array-flatten/package.json                       │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/bintrees/package.json                            │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/body-parser/package.json                         │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/bytes/package.json                               │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/call-bind-apply-helpers/package.json             │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/call-bound/package.json                          │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/cluster-key-slot/package.json                    │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/content-disposition/package.json                 │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/content-type/package.json                        │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/cookie-signature/package.json                    │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/cookie/package.json                              │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/debug/package.json                               │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/denque/package.json                              │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/depd/package.json                                │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/destroy/package.json                             │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/dunder-proto/package.json                        │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/ee-first/package.json                            │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/encodeurl/package.json                           │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/es-define-property/package.json                  │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/es-errors/package.json                           │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/es-object-atoms/package.json                     │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/escape-html/package.json                         │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/etag/package.json                                │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/express/package.json                             │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/finalhandler/package.json                        │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/forwarded/package.json                           │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/fresh/package.json                               │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/function-bind/package.json                       │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/get-intrinsic/package.json                       │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/get-proto/package.json                           │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/gopd/package.json                                │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/has-symbols/package.json                         │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/hasown/package.json                              │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/helmet/package.json                              │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/http-errors/package.json                         │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/iconv-lite/package.json                          │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/inherits/package.json                            │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/ioredis/node_modules/debug/package.json          │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/ioredis/node_modules/ms/package.json             │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/ioredis/package.json                             │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/ipaddr.js/package.json                           │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/math-intrinsics/package.json                     │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/media-typer/package.json                         │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/merge-descriptors/package.json                   │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/methods/package.json                             │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/mime-db/package.json                             │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/mime-types/package.json                          │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/mime/package.json                                │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/ms/package.json                                  │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/negotiator/package.json                          │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/object-inspect/package.json                      │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/on-finished/package.json                         │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/parseurl/package.json                            │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/path-to-regexp/package.json                      │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/proxy-addr/package.json                          │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/qs/package.json                                  │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/range-parser/package.json                        │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/raw-body/package.json                            │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/redis-errors/package.json                        │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/redis-parser/package.json                        │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/safe-buffer/package.json                         │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/safer-buffer/package.json                        │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/send/node_modules/ms/package.json                │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/send/package.json                                │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/serve-static/package.json                        │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/setprototypeof/package.json                      │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/side-channel-list/package.json                   │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/side-channel-map/package.json                    │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/side-channel-weakmap/package.json                │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/side-channel/package.json                        │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/standard-as-callback/package.json                │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/statuses/package.json                            │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/tdigest/package.json                             │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/toidentifier/package.json                        │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/type-is/package.json                             │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/unpipe/package.json                              │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/utils-merge/package.json                         │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/node_modules/vary/package.json                                │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] ├───────────────────────────────────────────────────────────────────┼──────────┼─────────┤
+[2026-11-24T05:23:34.662Z] │ app/package.json                                                  │ node-pkg │    -    │
+[2026-11-24T05:23:34.662Z] └───────────────────────────────────────────────────────────────────┴──────────┴─────────┘
+[2026-11-24T05:23:34.662Z] Legend:
+[2026-11-24T05:23:34.663Z] - '-': Not scanned
+[2026-11-24T05:23:34.663Z] - '0': Clean (no security findings detected)
+[2026-11-24T05:23:34.663Z] 
+[Pipeline] withCredentials
+[2026-11-24T05:23:34.696Z] Masking supported pattern matches of $GHCR_TOKEN
+[Pipeline] {
+[Pipeline] sh
+[2026-11-24T05:23:35.017Z] + mktemp -d -p /var/jenkins_home/workspace/shape-game .docker-ghcr.XXXXXX
+[2026-11-24T05:23:35.017Z] + export DOCKER_CONFIG=/var/jenkins_home/workspace/shape-game/.docker-ghcr.hb6vu8
+[2026-11-24T05:23:35.017Z] + trap docker logout ghcr.io > /dev/null 2>&1 || true; rm -rf "$DOCKER_CONFIG" EXIT
+[2026-11-24T05:23:35.017Z] + docker login ghcr.io -u SantMacedonio --password-stdin
+[2026-11-24T05:23:35.017Z] + echo ****
+[2026-11-24T05:23:35.928Z] 
+[2026-11-24T05:23:35.928Z] WARNING! Your credentials are stored unencrypted in '/var/jenkins_home/workspace/shape-game/.docker-ghcr.hb6vu8/config.json'.
+[2026-11-24T05:23:35.928Z] Configure a credential helper to remove this warning. See
+[2026-11-24T05:23:35.928Z] https://docs.docker.com/go/credential-store/
+[2026-11-24T05:23:35.928Z] 
+[2026-11-24T05:23:35.928Z] Login Succeeded
+[2026-11-24T05:23:35.928Z] + docker push ghcr.io/santmacedonio/shape-game:1.0.0-11-9be4c1d
+[2026-11-24T05:23:35.928Z] The push refers to repository [ghcr.io/santmacedonio/shape-game]
+[2026-11-24T05:23:35.928Z] 30e108eacfb0: Waiting
+[2026-11-24T05:23:35.928Z] 41d86f053edc: Waiting
+[2026-11-24T05:23:35.928Z] 687b1ec6f51a: Waiting
+[2026-11-24T05:23:35.928Z] 881fc932939e: Waiting
+[2026-11-24T05:23:35.928Z] c316ddc3a246: Waiting
+[2026-11-24T05:23:35.928Z] 43c5a5225736: Waiting
+[2026-11-24T05:23:35.928Z] da52b99fd556: Waiting
+[2026-11-24T05:23:35.928Z] 116d071fa114: Waiting
+[2026-11-24T05:23:36.181Z] 687b1ec6f51a: Waiting
+[2026-11-24T05:23:36.181Z] 881fc932939e: Waiting
+[2026-11-24T05:23:36.181Z] c316ddc3a246: Waiting
+[2026-11-24T05:23:36.181Z] 43c5a5225736: Waiting
+[2026-11-24T05:23:36.181Z] da52b99fd556: Waiting
+[2026-11-24T05:23:36.181Z] 116d071fa114: Waiting
+[2026-11-24T05:23:36.181Z] 30e108eacfb0: Waiting
+[2026-11-24T05:23:36.181Z] 41d86f053edc: Waiting
+[2026-11-24T05:23:36.181Z] c316ddc3a246: Waiting
+[2026-11-24T05:23:36.181Z] 43c5a5225736: Waiting
+[2026-11-24T05:23:36.181Z] da52b99fd556: Waiting
+[2026-11-24T05:23:36.181Z] 116d071fa114: Waiting
+[2026-11-24T05:23:36.181Z] 30e108eacfb0: Waiting
+[2026-11-24T05:23:36.181Z] 41d86f053edc: Waiting
+[2026-11-24T05:23:36.181Z] 687b1ec6f51a: Waiting
+[2026-11-24T05:23:36.181Z] 881fc932939e: Waiting
+[2026-11-24T05:23:36.432Z] 43c5a5225736: Waiting
+[2026-11-24T05:23:36.432Z] da52b99fd556: Waiting
+[2026-11-24T05:23:36.432Z] 116d071fa114: Waiting
+[2026-11-24T05:23:36.432Z] 30e108eacfb0: Waiting
+[2026-11-24T05:23:36.432Z] 41d86f053edc: Waiting
+[2026-11-24T05:23:36.432Z] 687b1ec6f51a: Waiting
+[2026-11-24T05:23:36.432Z] 881fc932939e: Waiting
+[2026-11-24T05:23:36.432Z] c316ddc3a246: Waiting
+[2026-11-24T05:23:36.432Z] c316ddc3a246: Waiting
+[2026-11-24T05:23:36.432Z] 43c5a5225736: Waiting
+[2026-11-24T05:23:36.432Z] da52b99fd556: Waiting
+[2026-11-24T05:23:36.432Z] 116d071fa114: Waiting
+[2026-11-24T05:23:36.432Z] 30e108eacfb0: Waiting
+[2026-11-24T05:23:36.432Z] 41d86f053edc: Waiting
+[2026-11-24T05:23:36.432Z] 687b1ec6f51a: Waiting
+[2026-11-24T05:23:36.432Z] 881fc932939e: Waiting
+[2026-11-24T05:23:36.432Z] 687b1ec6f51a: Waiting
+[2026-11-24T05:23:36.432Z] 881fc932939e: Waiting
+[2026-11-24T05:23:36.432Z] c316ddc3a246: Waiting
+[2026-11-24T05:23:36.432Z] 43c5a5225736: Waiting
+[2026-11-24T05:23:36.432Z] da52b99fd556: Waiting
+[2026-11-24T05:23:36.432Z] 116d071fa114: Waiting
+[2026-11-24T05:23:36.432Z] 30e108eacfb0: Waiting
+[2026-11-24T05:23:36.432Z] 41d86f053edc: Waiting
+[2026-11-24T05:23:36.682Z] 687b1ec6f51a: Waiting
+[2026-11-24T05:23:36.682Z] 881fc932939e: Waiting
+[2026-11-24T05:23:36.682Z] c316ddc3a246: Waiting
+[2026-11-24T05:23:36.682Z] 43c5a5225736: Waiting
+[2026-11-24T05:23:36.682Z] da52b99fd556: Waiting
+[2026-11-24T05:23:36.682Z] 116d071fa114: Waiting
+[2026-11-24T05:23:36.682Z] 30e108eacfb0: Waiting
+[2026-11-24T05:23:36.682Z] 41d86f053edc: Waiting
+[2026-11-24T05:23:36.682Z] 687b1ec6f51a: Waiting
+[2026-11-24T05:23:36.682Z] 881fc932939e: Waiting
+[2026-11-24T05:23:36.682Z] c316ddc3a246: Waiting
+[2026-11-24T05:23:36.682Z] 43c5a5225736: Waiting
+[2026-11-24T05:23:36.682Z] da52b99fd556: Waiting
+[2026-11-24T05:23:36.682Z] 116d071fa114: Waiting
+[2026-11-24T05:23:36.682Z] 30e108eacfb0: Waiting
+[2026-11-24T05:23:36.682Z] 41d86f053edc: Waiting
+[2026-11-24T05:23:36.682Z] 881fc932939e: Waiting
+[2026-11-24T05:23:36.682Z] c316ddc3a246: Waiting
+[2026-11-24T05:23:36.682Z] 43c5a5225736: Layer already exists
+[2026-11-24T05:23:36.682Z] da52b99fd556: Waiting
+[2026-11-24T05:23:36.682Z] 116d071fa114: Waiting
+[2026-11-24T05:23:36.682Z] 30e108eacfb0: Waiting
+[2026-11-24T05:23:36.682Z] 41d86f053edc: Waiting
+[2026-11-24T05:23:36.682Z] 687b1ec6f51a: Waiting
+[2026-11-24T05:23:36.933Z] c316ddc3a246: Waiting
+[2026-11-24T05:23:36.933Z] da52b99fd556: Waiting
+[2026-11-24T05:23:36.933Z] 116d071fa114: Waiting
+[2026-11-24T05:23:36.933Z] 30e108eacfb0: Layer already exists
+[2026-11-24T05:23:36.933Z] 41d86f053edc: Waiting
+[2026-11-24T05:23:36.933Z] 687b1ec6f51a: Waiting
+[2026-11-24T05:23:36.933Z] 881fc932939e: Waiting
+[2026-11-24T05:23:36.933Z] 41d86f053edc: Waiting
+[2026-11-24T05:23:36.933Z] 687b1ec6f51a: Layer already exists
+[2026-11-24T05:23:36.933Z] 881fc932939e: Layer already exists
+[2026-11-24T05:23:36.933Z] c316ddc3a246: Layer already exists
+[2026-11-24T05:23:36.933Z] da52b99fd556: Layer already exists
+[2026-11-24T05:23:36.933Z] 116d071fa114: Layer already exists
+[2026-11-24T05:23:38.276Z] 41d86f053edc: Pushed
+[2026-11-24T05:23:40.760Z] 1.0.0-11-9be4c1d: digest: sha256:d7af97bd32a19c1f73336463b02cf811274ad5f83feaf1d3b85e178ed2b5d057 size: 856
+[2026-11-24T05:23:40.760Z] + docker logout ghcr.io
+[2026-11-24T05:23:40.760Z] + rm -rf /var/jenkins_home/workspace/shape-game/.docker-ghcr.hb6vu8
+[Pipeline] }
+[Pipeline] // withCredentials
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (5. Deploy con Helm)
+[Pipeline] script
+[Pipeline] {
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] withCredentials
+[2026-11-24T05:23:41.137Z] Masking supported pattern matches of $KUBECONFIG
+[Pipeline] {
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] sh
+[2026-11-24T05:23:41.472Z] + helm version --short
+[2026-11-24T05:23:41.472Z] v4.3.2+g8346aaa
+[2026-11-24T05:23:41.472Z] + kubectl version --client
+[2026-11-24T05:23:41.472Z] Client Version: v1.37.2
+[2026-11-24T05:23:41.472Z] Kustomize Version: v5.8.1
+[2026-11-24T05:23:41.472Z] + bash ci/deploy.sh
+[2026-11-24T05:23:41.722Z] 
+[2026-11-24T05:23:41.722Z] >>> Release shape-game-dev existente (revisión 14) en shape-dev
+[2026-11-24T05:23:41.722Z] 
+[2026-11-24T05:23:41.722Z] >>> helm upgrade --install shape-game-dev con la imagen ghcr.io/santmacedonio/shape-game:1.0.0-11-9be4c1d
+[2026-11-24T05:23:53.814Z] Release "shape-game-dev" has been upgraded. Happy Helming!
+[2026-11-24T05:23:53.814Z] NAME: shape-game-dev
+[2026-11-24T05:23:53.814Z] LAST DEPLOYED: Tue Nov 24 05:23:41 2026
+[2026-11-24T05:23:53.814Z] NAMESPACE: shape-dev
+[2026-11-24T05:23:53.814Z] STATUS: deployed
+[2026-11-24T05:23:53.814Z] REVISION: 15
+[2026-11-24T05:23:53.814Z] DESCRIPTION: Upgrade complete
+[2026-11-24T05:23:53.814Z] NOTES:
+[2026-11-24T05:23:53.814Z] Shape Popper desplegado: release "shape-game-dev" en el namespace "shape-dev".
+[2026-11-24T05:23:53.814Z] 
+[2026-11-24T05:23:53.814Z]   Versión activa (recibe el tráfico): BLUE
+[2026-11-24T05:23:53.814Z]   - blue: ghcr.io/santmacedonio/shape-game:1.0.0-11-9be4c1d (v1.0.0) x 1 réplica(s)
+[2026-11-24T05:23:53.814Z]   - green: ghcr.io/santmacedonio/shape-game:1.0.0-11-9be4c1d (v2.0.0) x 1 réplica(s)
+[2026-11-24T05:23:53.814Z]   Redis: sin persistencia (emptyDir)
+[2026-11-24T05:23:53.814Z] 
+[2026-11-24T05:23:53.814Z] 1. Verificar que los pods estén listos:
+[2026-11-24T05:23:53.814Z]      kubectl get pods -n shape-dev -l app.kubernetes.io/instance=shape-game-dev
+[2026-11-24T05:23:53.814Z] 
+[2026-11-24T05:23:53.814Z] 2. Probar el servicio:
+[2026-11-24T05:23:53.814Z]      helm test shape-game-dev -n shape-dev --logs
+[2026-11-24T05:23:53.814Z] 
+[2026-11-24T05:23:53.814Z] 3. Abrir el juego:
+[2026-11-24T05:23:53.814Z]      minikube service shape-game-dev -n shape-dev
+[2026-11-24T05:23:53.814Z]      o: kubectl port-forward -n shape-dev svc/shape-game-dev 8080:80
+[2026-11-24T05:23:53.814Z] 
+[2026-11-24T05:23:53.814Z] 4. Blue/Green:
+[2026-11-24T05:23:53.814Z]      helm upgrade shape-game-dev ./helm-chart -n shape-dev --reset-then-reuse-values --set app.activeColor=green
+[2026-11-24T05:23:53.814Z]      helm rollback shape-game-dev -n shape-dev     # volver a la revisión anterior
+[2026-11-24T05:23:53.814Z]      helm history shape-game-dev -n shape-dev
+[2026-11-24T05:23:53.814Z] 
+[2026-11-24T05:23:53.814Z] >>> Smoke test de los pods GREEN
+[2026-11-24T05:23:53.814Z]   shape-game-dev-green-5c58ddcd54-rhqr5 -> {"status":"ready","pod":"shape-game-dev-green-5c58ddcd54-rhqr5","color":"green","version":"v2.0.0","redis":"connected"}
+[2026-11-24T05:23:53.814Z] 
+[2026-11-24T05:23:53.814Z] >>> helm test shape-game-dev
+[2026-11-24T05:23:56.298Z] NAME: shape-game-dev
+[2026-11-24T05:23:56.298Z] LAST DEPLOYED: Tue Nov 24 05:23:41 2026
+[2026-11-24T05:23:56.298Z] NAMESPACE: shape-dev
+[2026-11-24T05:23:56.298Z] STATUS: deployed
+[2026-11-24T05:23:56.298Z] REVISION: 15
+[2026-11-24T05:23:56.298Z] DESCRIPTION: Upgrade complete
+[2026-11-24T05:23:56.298Z] TEST SUITE:     shape-game-dev-test-connection
+[2026-11-24T05:23:56.298Z] Last Started:   Tue Nov 24 05:23:53 2026
+[2026-11-24T05:23:56.298Z] Last Completed: Tue Nov 24 05:23:56 2026
+[2026-11-24T05:23:56.298Z] Phase:          Succeeded
+[2026-11-24T05:23:56.298Z] 
+[2026-11-24T05:23:56.298Z] POD LOGS: shape-game-dev-test-connection (wget)
+[2026-11-24T05:23:56.298Z] GET http://shape-game-dev:80/readyz (intento 1): {"status":"ready","pod":"shape-game-dev-blue-8566b85d79-l85xc","color":"blue","version":"v1.0.0","redis":"connected"}
+[2026-11-24T05:23:56.298Z] GET http://shape-game-dev:80/ -> 200 (frontend OK)
+[2026-11-24T05:23:56.298Z] OK: servicio accesible, color activo blue, Redis conectado
+[2026-11-24T05:23:56.298Z] 
+[2026-11-24T05:23:56.298Z] 
+[2026-11-24T05:23:56.298Z] >>> Despliegue OK
+[2026-11-24T05:23:56.548Z] REVISION	UPDATED                 	STATUS    	CHART           	APP VERSION	DESCRIPTION                                                                                                                                      
+[2026-11-24T05:23:56.548Z] 11      	Tue Nov 24 04:55:10 2026	failed    	shape-game-1.0.0	v1.0.0     	Upgrade "shape-game-dev" failed: resource Deployment/shape-dev/shape-game-dev-blue not ready. status: InProgress, message: Pending termination...
+[2026-11-24T05:23:56.548Z] 12      	Tue Nov 24 05:00:10 2026	superseded	shape-game-1.0.0	v1.0.0     	Rollback to 10                                                                                                                                   
+[2026-11-24T05:23:56.548Z] 13      	Tue Nov 24 05:15:59 2026	superseded	shape-game-1.0.0	v1.0.0     	Upgrade complete                                                                                                                                 
+[2026-11-24T05:23:56.548Z] 14      	Tue Nov 24 05:20:52 2026	superseded	shape-game-1.0.0	v1.0.0     	Upgrade complete                                                                                                                                 
+[2026-11-24T05:23:56.548Z] 15      	Tue Nov 24 05:23:41 2026	deployed  	shape-game-1.0.0	v1.0.0     	Upgrade complete                                                                                                                                 
+[2026-11-24T05:23:56.548Z] Color activo: blue
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // withCredentials
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Declarative: Post Actions)
+[Pipeline] archiveArtifacts
+[2026-11-24T05:23:56.806Z] Archiving artifacts
+[Pipeline] sh
+[2026-11-24T05:23:57.110Z] + docker image rm ghcr.io/santmacedonio/shape-game:1.0.0-11-9be4c1d
+[Pipeline] echo
+[2026-11-24T05:23:57.224Z] [OK] Pipeline completo: ghcr.io/santmacedonio/shape-game:1.0.0-11-9be4c1d desplegada en dev
+[Pipeline] cleanWs
+[2026-11-24T05:23:57.306Z] [WS-CLEANUP] Deleting project workspace...
+[2026-11-24T05:23:57.306Z] [WS-CLEANUP] Deferred wipeout is used...
+[2026-11-24T05:23:57.334Z] [WS-CLEANUP] done
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // timeout
+[Pipeline] }
+[2026-11-24T05:23:57.642Z] 
+[Pipeline] // ansiColor
+[Pipeline] }
+[Pipeline] // timestamps
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+Finished: SUCCESS

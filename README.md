@@ -439,9 +439,9 @@ Para detenerlo: `.\scripts\jenkins-down.ps1`. Con `-Purge` (o `--purge`) tambié
 
 ### Cómo se conecta con Docker y Kubernetes
 
-- **Docker:** el contenedor monta el socket de Docker del host para construir imágenes. En *modo local* (`PUBLISH_IMAGE=false`), la imagen se pasa a Minikube con `docker save | ctr images import`, que es lo mismo que hace `minikube image load`.
+- **Docker:** el contenedor monta el socket de Docker del host para construir imágenes. Con `PUBLISH_IMAGE=true` la imagen se sube a `ghcr.io/santmacedonio/shape-game`, que es un paquete **público**, y Kubernetes la descarga de ahí sin credenciales. El login a ghcr.io dura solo lo que tarda el *push*: se guarda en una carpeta temporal y se borra al terminar. En *modo local* (`PUBLISH_IMAGE=false`, el que usan los builds automáticos), la imagen se pasa a Minikube con `docker save | ctr images import`, que es lo mismo que hace `minikube image load`.
 - **Kubernetes:** Jenkins no usa el kubeconfig de administrador. Usa la ServiceAccount `jenkins-deployer` ([`k8s/jenkins/rbac.yaml`](k8s/jenkins/rbac.yaml)), que solo puede gestionar los recursos de la app en los namespaces `default` y `shape-dev`. No puede tocar `kube-system` ni los namespaces de monitoreo, ni borrar las políticas de Kyverno.
-- **Código:** mientras la rama no esté en GitHub, el job clona el repositorio local montado en `/repo` (`REPO_URL=file:///repo`). Por eso **solo ve los cambios que tienen commit**. Para usar GitHub, basta con cambiar `REPO_URL` y `REPO_BRANCH` en `.env.jenkins`.
+- **Código:** el job clona el repositorio y la rama que indican `REPO_URL` y `REPO_BRANCH` en `.env.jenkins`. Con GitHub (`REPO_URL=https://github.com/SantMacedonio/DevOps1.git`), Jenkins **solo ve lo que tiene *push***. Sin GitHub se puede usar el repositorio local, montado en `/repo` (`REPO_URL=file:///repo`): en ese caso ve lo que tiene commit, aunque no tenga push.
 
 ### Evidencia ([`reports/jenkins/`](reports/jenkins/))
 
@@ -452,6 +452,8 @@ Para detenerlo: `.\scripts\jenkins-down.ps1`. Con `-Purge` (o `--purge`) tambié
 | [#3](reports/jenkins/build-3-rollback-automatico.txt) | ⛔ rollback en dev | El smoke test probó un pod viejo que se estaba apagando (error del script, ya corregido). Muestra el `helm rollback` automático: dev volvió a la revisión anterior sin quedar roto |
 | [#4](reports/jenkins/build-4-exito-dev.txt) | ✅ dev, 1 min 5 s | El mismo despliegue en dev, con la corrección |
 | [#6](reports/jenkins/build-6-alternancia-prod.txt) | ✅ prod, 1 min 8 s | Blue/Green alternado: con blue activo, la versión nueva va a green, se prueba y recién después recibe el tráfico. Blue conserva la versión anterior para volver atrás |
+| [#8](reports/jenkins/build-8-paquete-privado.txt) | ⛔ rollback en dev | Primera publicación en ghcr.io. El *push* funcionó, pero GitHub crea los paquetes como privados: Kubernetes no pudo descargar la imagen, los pods nuevos no arrancaron y Helm se cortó a los 5 minutos. El rollback dejó dev sano. Después se hizo público el paquete |
+| [#11](reports/jenkins/build-11-publicacion-ghcr.txt) | ✅ dev, 52 s | Publicación completa: control de secretos de Trivy, login, *push* a `ghcr.io/santmacedonio/shape-game:1.0.0-11-9be4c1d` y cierre de sesión. Dev descarga la imagen desde ghcr.io sin credenciales |
 
 ### Simplificaciones respecto de un entorno real
 
