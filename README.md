@@ -569,6 +569,8 @@ kubectl get secret grafana-admin -n monitoring -o jsonpath='{.data.admin-passwor
 
 ![Dashboard de Grafana con tráfico simulado](docs/img/grafana-dashboard.png)
 
+*Captura parcial del dashboard durante una corrida de `generate-traffic` (5 minutos, 8 jugadores), con blue activo en prod. Se ven las secciones **Recursos por pod** (CPU y memoria de los 4 pods) y **Métricas de negocio**: las figuras destruidas por segundo solo suben en blue, que es la versión que recibe el tráfico, y las ascensiones quedan en 0 porque blue no tiene prestigio. Los paneles de RPS y latencia están más arriba en el mismo dashboard.*
+
 `deploy-monitoring` convierte el archivo en un ConfigMap, así que `grafana/dashboard.json` es la única fuente del dashboard. Para modificarlo:
 
 1. Editarlo en Grafana con el usuario admin.
