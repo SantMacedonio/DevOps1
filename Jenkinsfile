@@ -3,7 +3,7 @@
 //   1. Checkout            -> clona el repositorio
 //   2. Seguridad del código -> Semgrep (SAST) y Snyk (dependencias), en paralelo
 //   3. Build y tests       -> npm ci + tests (reporte JUnit)
-//   4. Imagen Docker       -> build + Trivy (corta si hay CRITICAL) + publicación
+//   4. Imagen Docker       -> build + Trivy (corta si hay CRITICAL o secretos) + publicación
 //   5. Deploy con Helm     -> Blue/Green en Kubernetes (ver ci/deploy.sh)
 // Si Semgrep, Snyk o Trivy encuentran problemas críticos, el pipeline se
 // detiene en esa etapa, informa el motivo y no construye ni despliega nada.
@@ -140,12 +140,22 @@ pipeline {
                     if (rc != 0) {
                         error('Trivy encontró vulnerabilidades CRÍTICAS en la imagen: no se publica ni se despliega (ver reports/ci/trivy.txt).')
                     }
+                    // Corte por secretos (claves, tokens, contraseñas) de cualquier severidad:
+                    // la imagen se publica en un registry público, así que nada sensible puede viajar adentro
+                    rc = sh(returnStatus: true, script: 'trivy image --quiet --scanners secret --exit-code 1 "$IMAGE_REPO:$IMAGE_TAG"')
+                    if (rc != 0) {
+                        error('Trivy encontró SECRETOS dentro de la imagen: no se publica ni se despliega (ver el detalle arriba y reports/ci/trivy.txt).')
+                    }
                     if (params.PUBLISH_IMAGE) {
                         withCredentials([usernamePassword(credentialsId: 'ghcr', usernameVariable: 'GHCR_USER', passwordVariable: 'GHCR_TOKEN')]) {
+                            // El login se guarda en una carpeta temporal del workspace (no en el
+                            // home de Jenkins) y se cierra y borra al salir, aunque el push falle.
+                            // Si el build se cancela a la fuerza, cleanWs borra la carpeta igual.
                             sh '''
+                                export DOCKER_CONFIG="$(mktemp -d -p "$WORKSPACE" .docker-ghcr.XXXXXX)"
+                                trap 'docker logout ghcr.io > /dev/null 2>&1 || true; rm -rf "$DOCKER_CONFIG"' EXIT
                                 echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin
                                 docker push "$IMAGE_REPO:$IMAGE_TAG"
-                                docker logout ghcr.io
                             '''
                         }
                     } else {

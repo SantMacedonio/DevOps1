@@ -410,7 +410,7 @@ Si alguna herramienta encuentra un problema crítico, el pipeline **se detiene e
 | 2 | Semgrep ([`ci/semgrep-gate.js`](ci/semgrep-gate.js)) | hay hallazgos de severidad `ERROR` en el código |
 | 2 | Snyk ([`ci/snyk-summary.js`](ci/snyk-summary.js)) | alguna dependencia npm tiene una vulnerabilidad `critical` (o Snyk no puede analizar, por ejemplo por falta de token) |
 | 3 | `node --test` | falla algún test |
-| 4 | Trivy | la imagen tiene vulnerabilidades `CRITICAL` |
+| 4 | Trivy | la imagen tiene vulnerabilidades `CRITICAL` o **cualquier secreto** (claves, tokens, contraseñas), sin importar su severidad. Se revisa antes de publicar porque el paquete de ghcr.io es público |
 | 5 | [`ci/deploy.sh`](ci/deploy.sh) | el color nuevo no responde, no se conecta a Redis o falla `helm test`. En ese caso hace además `helm rollback` a la revisión anterior |
 
 ### Levantar Jenkins y correr el pipeline
