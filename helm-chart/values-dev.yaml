@@ -1,0 +1,49 @@
+# =============================================================================
+# Entorno de DESARROLLO
+#   helm install shape-game-dev ./helm-chart -f helm-chart/values-dev.yaml \
+#     -n shape-dev --create-namespace
+# Liviano: 1 réplica por color, menos recursos, Redis sin persistencia y sin
+# scraping de Prometheus. Puede convivir con prod (otro namespace y NodePort).
+# =============================================================================
+app:
+  activeColor: blue
+  versions:
+    blue:
+      replicas: 1
+    green:
+      replicas: 1
+  resources:
+    requests:
+      cpu: 25m
+      memory: 48Mi
+    limits:
+      cpu: 150m
+      memory: 128Mi
+  extraConfig:
+    NODE_ENV: development
+
+service:
+  type: NodePort
+  nodePort: 30081
+
+ingress:
+  enabled: false
+
+redis:
+  maxmemory: 64mb
+  # En desarrollo no hace falta escribir cada operación a disco
+  appendonly: false
+  resources:
+    requests:
+      cpu: 25m
+      memory: 32Mi
+    limits:
+      cpu: 100m
+      memory: 96Mi
+  persistence:
+    # Los datos se pierden al recrear el pod: aceptable en desarrollo
+    enabled: false
+
+monitoring:
+  # Prometheus solo descubre pods del namespace "default" (prod)
+  scrape: false

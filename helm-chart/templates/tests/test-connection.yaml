@@ -1,0 +1,53 @@
+{{- if .Values.tests.enabled }}
+# "helm test <release>": verifica que el Service de la app responde y que la
+# app está conectada a Redis. Usa la imagen de la app (trae wget) y cumple las
+# políticas de Kyverno (tag fijo, recursos, usuario no root).
+{{- $img := (index .Values.app.versions .Values.app.activeColor).image }}
+apiVersion: v1
+kind: Pod
+metadata:
+  name: {{ include "shape-game.fullname" . }}-test-connection
+  labels:
+    {{- include "shape-game.labels" . | nindent 4 }}
+    app.kubernetes.io/component: test
+  annotations:
+    "helm.sh/hook": test
+    "helm.sh/hook-delete-policy": before-hook-creation,hook-succeeded
+spec:
+  restartPolicy: Never
+  automountServiceAccountToken: false
+  # Sin variables <SERVICIO>_PORT inyectadas por Kubernetes (podrían pisar REDIS_PORT)
+  enableServiceLinks: false
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 1000
+    runAsGroup: 1000
+    seccompProfile:
+      type: RuntimeDefault
+  containers:
+    - name: wget
+      image: "{{ $img.repository }}:{{ $img.tag }}"
+      imagePullPolicy: {{ .Values.app.image.pullPolicy }}
+      command: ["sh", "-c"]
+      args:
+        - |
+          set -e
+          URL="http://{{ include "shape-game.fullname" . }}:{{ .Values.service.port }}"
+          # La app arranca aunque Redis todavía no esté listo (modo degradado en
+          # memoria) y se reconecta sola: se espera hasta 30 s a que conecte.
+          for i in $(seq 1 15); do
+            RESP=$(wget -qO- "$URL/readyz" || true)
+            echo "GET $URL/readyz (intento $i): $RESP"
+            echo "$RESP" | grep -q '"redis":"connected"' && break
+            if [ "$i" = 15 ]; then echo "FAIL: la app no se conectó a Redis en 30 s"; exit 1; fi
+            sleep 2
+          done
+          echo "$RESP" | grep -q '"color":"{{ .Values.app.activeColor }}"' || { echo "FAIL: el Service no apunta a {{ .Values.app.activeColor }}"; exit 1; }
+          wget -q --spider "$URL/" && echo "GET $URL/ -> 200 (frontend OK)"
+          echo "OK: servicio accesible, color activo {{ .Values.app.activeColor }}, Redis conectado"
+      securityContext:
+        {{- include "shape-game.containerSecurityContext" . | nindent 8 }}
+      resources:
+        requests: { cpu: 10m, memory: 16Mi }
+        limits: { cpu: 100m, memory: 64Mi }
+{{- end }}

@@ -1,0 +1,60 @@
+# Valores de Helm para Falco (chart falcosecurity/falco 9.2.2, Falco 0.45.2)
+#   helm upgrade --install falco falcosecurity/falco --version 9.2.2 \
+#     -n falco --create-namespace -f k8s/security/falco-values.yaml
+#
+# Falco corre como root y privilegiado: necesita cargar un programa eBPF en el
+# kernel para observar las llamadas al sistema de todos los contenedores. Por
+# eso el namespace "falco" se excluye de la política require-non-root (Kyverno).
+
+driver:
+  # Driver eBPF moderno: no requiere compilar módulos ni headers del kernel.
+  # Requiere kernel >= 5.8 con BTF (minikube sobre WSL2: 5.15 con BTF).
+  kind: modern_ebpf
+
+# Salida inmediata de los eventos en los logs del pod
+tty: true
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 1000m
+    memory: 1024Mi
+
+# Sin integraciones extra (falcosidekick / UI) para ahorrar recursos en minikube
+falcosidekick:
+  enabled: false
+
+falco:
+  # Eventos en JSON: más fáciles de filtrar y de guardar como evidencia
+  json_output: true
+  json_include_output_property: true
+  json_include_tags_property: true
+
+customRules:
+  shape-game-rules.yaml: |-
+    # Regla propia: cualquier shell que se abra dentro de un contenedor de la
+    # aplicación (app o Redis). A diferencia de la regla estándar
+    # "Terminal shell in container", no exige una terminal interactiva (TTY),
+    # así que también detecta "kubectl exec <pod> -- sh -c '...'".
+    # Se ignora la shell que es el proceso principal del contenedor (PID 1),
+    # como el script del generador de tráfico: solo alerta por shells que se
+    # abren "desde afuera" dentro de un contenedor que ya estaba corriendo.
+    - rule: Shell en contenedor de Shape Popper
+      desc: >
+        Se ejecutó una shell dentro de un contenedor de Shape Popper. Los
+        contenedores de la app nunca lanzan shells en funcionamiento normal,
+        por lo que suele indicar un acceso manual o un atacante.
+      condition: >
+        spawned_process and container
+        and proc.name in (shell_binaries)
+        and proc.vpid != 1
+        and container.image.repository contains "shape-"
+      output: >
+        Shell abierta en contenedor de Shape Popper
+        (user=%user.name uid=%user.uid shell=%proc.name cmdline=%proc.cmdline
+        parent=%proc.pname terminal=%proc.tty pod=%k8s.pod.name ns=%k8s.ns.name
+        image=%container.image.repository:%container.image.tag container_id=%container.id)
+      priority: WARNING
+      tags: [shape_game, container, shell, mitre_execution, T1059]

@@ -1,0 +1,56 @@
+# Política 3: impedir contenedores que corran como root.
+# Se exige runAsNonRoot: true (a nivel pod o en cada contenedor) y se prohíbe
+# runAsUser: 0. Con runAsNonRoot, además, el kubelet se niega a arrancar un
+# contenedor cuya imagen use root, aunque el manifiesto no diga runAsUser.
+apiVersion: policies.kyverno.io/v1
+kind: ValidatingPolicy
+metadata:
+  name: require-non-root
+  annotations:
+    policies.kyverno.io/title: Impedir contenedores como root
+    policies.kyverno.io/severity: high
+spec:
+  validationActions: [Deny]
+  failurePolicy: Fail
+  matchConstraints:
+    resourceRules:
+      - apiGroups: [""]
+        apiVersions: [v1]
+        operations: [CREATE, UPDATE]
+        resources: [pods]
+    # Falco se excluye a propósito: necesita root para cargar su sonda eBPF
+    namespaceSelector:
+      matchExpressions:
+        - key: kubernetes.io/metadata.name
+          operator: NotIn
+          values: [kube-system, kube-public, kube-node-lease, kyverno, falco, ingress-nginx]
+  autogen:
+    podControllers:
+      controllers: [deployments, replicasets, statefulsets, daemonsets, jobs, cronjobs]
+  variables:
+    - name: containers
+      expression: >-
+        object.spec.containers +
+        (has(object.spec.initContainers) ? object.spec.initContainers : [])
+    - name: podNonRoot
+      expression: >-
+        has(object.spec.securityContext) && has(object.spec.securityContext.runAsNonRoot) &&
+        object.spec.securityContext.runAsNonRoot == true
+    - name: podRunsAsRoot
+      expression: >-
+        has(object.spec.securityContext) && has(object.spec.securityContext.runAsUser) &&
+        object.spec.securityContext.runAsUser == 0
+  validations:
+    - expression: >-
+        variables.containers.all(c,
+          (has(c.securityContext) && has(c.securityContext.runAsNonRoot))
+            ? c.securityContext.runAsNonRoot == true
+            : variables.podNonRoot)
+      message: >-
+        Los contenedores no pueden ejecutarse como root: definir securityContext.runAsNonRoot: true
+        (a nivel pod o en cada contenedor).
+    - expression: >-
+        !variables.podRunsAsRoot &&
+        variables.containers.all(c,
+          !(has(c.securityContext) && has(c.securityContext.runAsUser) && c.securityContext.runAsUser == 0))
+      message: Prohibido runAsUser 0 (root). Usar un UID sin privilegios.

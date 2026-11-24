@@ -1,0 +1,64 @@
+# Semgrep 1.186.0 (SAST)
+# Fecha: 2026-11-24 14:22:00 UTC
+# Comando: semgrep scan --config p/javascript --config p/nodejs --config p/expressjs --config p/xss --config p/owasp-top-ten --config p/security-audit --config p/secrets --config p/dockerfile --config p/kubernetes --config semgrep/shape-popper.yaml --no-git-ignore
+
+## 1. Analisis del proyecto (reglas oficiales + reglas propias)
+               
+               
+┌─────────────┐
+│ Scan Status │
+└─────────────┘
+  Scanning 92 files with 743 Code rules:
+                                                                                                                        
+  Language      Rules   Files          Origin      Rules                                                                
+ ─────────────────────────────        ───────────────────                                                               
+  <multilang>      61      61          Community     740                                                                
+  yaml             32      26          Custom          3                                                                
+  bash              1      16                                                                                           
+  js               86       9                                                                                           
+  dockerfile        7       3                                                                                           
+  json              3       3                                                                                           
+  php              22       1                                                                                           
+  html              1       1                                                                                           
+                                                                                                                        
+                  
+                  
+┌────────────────┐
+│ 1 Code Finding │
+└────────────────┘
+                     
+    src/public/app.js
+    ❯❱ semgrep.innerhtml-con-contenido-dinamico
+          ❰❰ Blocking ❱❱
+          Se asigna HTML armado dinámicamente a innerHTML. Si algún valor viene del usuario o del servidor sin
+          escapar, es un XSS. Usar textContent, o escapar cada valor interpolado (escapeHtml) y justificarlo. 
+                                                                                                              
+          874┆ els.upgradesContainer.innerHTML = html;
+
+                
+                
+┌──────────────┐
+│ Scan Summary │
+└──────────────┘
+✅ Scan completed successfully.
+ • Findings: 1 (1 blocking)
+ • Rules run: 212
+ • Targets scanned: 92
+ • Parsed lines: ~99.9%
+ • Scan skipped: 
+   ◦ Matching --exclude patterns: 4
+   ◦ Files matching .semgrepignore patterns: 3
+ • For a detailed list of skipped files and lines, run semgrep with the --verbose flag
+Ran 212 rules on 92 files: 1 finding.
+
+## 2. Prueba de las reglas propias (semgrep --test semgrep/)
+##    Cada regla debe detectar los casos inseguros y no marcar los seguros.
+               
+               
+┌─────────────┐
+│ Scan Status │
+└─────────────┘
+  Scanning 1 file with 3 Code rules:
+  Scanning 1 file with 3 js rules.
+3/3: ✓ All tests passed
+No tests for fixes found.

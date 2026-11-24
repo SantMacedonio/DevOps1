@@ -1,0 +1,107 @@
+# =============================================================================
+# Valores por defecto de la Chart shape-game.
+# Con estos valores alcanza para:  helm install shape-game ./helm-chart
+# Los entornos los sobrescriben con -f values-dev.yaml / -f values-prod.yaml.
+# =============================================================================
+
+# Sobrescribe el nombre base de los recursos (por defecto: nombre de la release)
+nameOverride: ""
+fullnameOverride: ""
+
+# --- Aplicación (backend Express + frontend estático) -------------------------
+app:
+  # Versión que recibe el tráfico del Service: "blue" o "green".
+  # El switch Blue/Green es:  helm upgrade ... --set app.activeColor=green
+  activeColor: blue
+
+  # Puerto en el que escucha la app dentro del contenedor
+  port: 3000
+
+  image:
+    pullPolicy: IfNotPresent
+
+  # Secrets para descargar imágenes de un registry privado (ej: ghcr.io).
+  # Se crean aparte: kubectl create secret docker-registry ghcr-pull ...
+  # Ejemplo: imagePullSecrets: [{ name: ghcr-pull }]
+  imagePullSecrets: []
+
+  # Una entrada por color. Cada versión habilitada genera su propio Deployment.
+  versions:
+    blue:
+      enabled: true
+      replicas: 1
+      image:
+        repository: shape-game
+        tag: v1
+      appVersion: v1.0.0
+      prestigeEnabled: false
+    green:
+      enabled: true
+      replicas: 1
+      image:
+        repository: shape-game
+        tag: v2
+      appVersion: v2.0.0
+      prestigeEnabled: true
+
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+  # Variables de entorno extra (se agregan al ConfigMap de la app)
+  extraConfig:
+    NODE_ENV: production
+
+# --- Service de la app ---------------------------------------------------------
+service:
+  # NodePort: accesible con "minikube service <nombre>". ClusterIP si se usa Ingress.
+  type: NodePort
+  port: 80
+  # Puerto fijo del nodo (30000-32767). Vacío = Kubernetes elige uno libre.
+  nodePort: 30080
+
+# --- Ingress (requiere un Ingress Controller, ej: minikube addons enable ingress)
+ingress:
+  enabled: false
+  className: nginx
+  host: shape-game.local
+  annotations: {}
+
+# --- Redis -----------------------------------------------------------------------
+redis:
+  image:
+    repository: shape-redis
+    tag: 1.0.1
+    pullPolicy: IfNotPresent
+  port: 6379
+  # Límite de memoria de Redis (debe ser menor que resources.limits.memory)
+  maxmemory: 200mb
+  # Append Only File: persiste cada escritura en disco
+  appendonly: true
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 250m
+      memory: 256Mi
+  persistence:
+    # true: PersistentVolumeClaim (los datos sobreviven a reinicios del pod)
+    # false: emptyDir (los datos se pierden al recrear el pod)
+    enabled: true
+    size: 1Gi
+    storageClass: ""
+
+# --- Monitoreo -------------------------------------------------------------------
+monitoring:
+  # Agrega las anotaciones prometheus.io/* para que Prometheus scrapee los pods.
+  # Prometheus (k8s/monitoring/) descubre pods solo en el namespace "default".
+  scrape: true
+
+# --- Pruebas (helm test) --------------------------------------------------------
+tests:
+  enabled: true

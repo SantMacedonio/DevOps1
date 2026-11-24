@@ -6,6 +6,9 @@ node_modules/
 # Logs y depuración
 logs/
 *.log
+# excepciones: evidencias que pide el enunciado con extensión .log
+!reports/falco-event.log
+!reports/kyverno-validation.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
@@ -39,3 +42,16 @@ desktop.ini
 .eslintcache
 tmp/
 temp/
+
+# Resultados de tests generados en CI
+reports/tests/
+
+# Jenkins: credenciales locales y kubeconfig generado (no se suben)
+.jenkins/
+!.env.jenkins.example
+reports/ci/
+
+# Documentos de resumen: solo locales, no se versionan
+RESUMEN.md
+TECNOLOGIAS.md
+GUIA-DEL-PROYECTO.md

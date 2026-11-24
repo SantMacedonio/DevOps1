@@ -1,0 +1,15 @@
+# Plugins de Jenkins del pipeline, con versiones fijas (Jenkins 2.580.2 LTS).
+# Las dependencias transitivas las resuelve jenkins-plugin-cli al construir.
+configuration-as-code:2147.v8a_8d38668c72
+job-dsl:3752.vb_199526b_20c3
+workflow-aggregator:608.v67378e9d3db_1
+git:5.11.0
+credentials-binding:728.v902a_273b_8947
+plain-credentials:199.v9f8e1f741799
+matrix-auth:3.3
+junit:1458.1460.vd53b_087eeb_2c
+timestamper:1.30
+ansicolor:542.v03d235fee02d
+pipeline-stage-view:2.41
+pipeline-graph-view:1053.v9df19e6ceed2
+ws-cleanup:0.49

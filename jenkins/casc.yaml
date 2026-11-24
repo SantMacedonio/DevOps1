@@ -1,0 +1,98 @@
+# =============================================================================
+# Jenkins Configuration as Code (JCasC)
+# Toda la configuración de Jenkins está acá: no se configura nada a mano.
+# Los valores ${...} vienen de variables de entorno (archivo .env.jenkins, que
+# NO se sube al repositorio) o de archivos montados en /run/secrets.
+# =============================================================================
+jenkins:
+  systemMessage: "Shape Popper CI/CD - configurado con Jenkins Configuration as Code"
+  # El pipeline corre en el propio controlador (proyecto local de un solo nodo).
+  # En producción se usarían agentes separados (ver README).
+  numExecutors: 2
+  mode: NORMAL
+  securityRealm:
+    local:
+      allowsSignup: false
+      users:
+        - id: "admin"
+          name: "Administrador"
+          password: "${JENKINS_ADMIN_PASSWORD}"
+  authorizationStrategy:
+    loggedInUsersCanDoAnything:
+      allowAnonymousRead: false
+
+unclassified:
+  location:
+    url: "http://localhost:8080/"
+
+credentials:
+  system:
+    domainCredentials:
+      - credentials:
+          # Token de Snyk (análisis de dependencias)
+          - string:
+              scope: GLOBAL
+              id: "snyk-token"
+              description: "Snyk API token"
+              secret: "${SNYK_TOKEN:-not-set}"
+          # GitHub Container Registry (usuario + Personal Access Token con write:packages)
+          - usernamePassword:
+              scope: GLOBAL
+              id: "ghcr"
+              description: "GitHub Container Registry"
+              username: "${GHCR_USER:-not-set}"
+              password: "${GHCR_TOKEN:-not-set}"
+          # kubeconfig de la ServiceAccount jenkins-deployer (permisos mínimos)
+          - file:
+              scope: GLOBAL
+              id: "kubeconfig"
+              description: "kubeconfig de jenkins-deployer (k8s/jenkins/rbac.yaml)"
+              fileName: "kubeconfig"
+              secretBytes: "${readFileBase64:/run/secrets/kubeconfig}"
+
+jobs:
+  - script: |
+      // Multibranch: Jenkins descubre solo las ramas del repositorio y crea un
+      // sub-job por cada una que tenga Jenkinsfile. La rama decide el entorno
+      // (ver Jenkinsfile): main -> prod (y publica en ghcr.io), feature/* -> dev.
+      // Los parámetros los declara el Jenkinsfile de cada rama.
+      multibranchPipelineJob('shape-game') {
+        displayName('shape-game')
+        description('Pipeline CI/CD de Shape Popper: Semgrep, Snyk, tests, imagen Docker (Trivy) y despliegue con Helm. main despliega en prod y feature/* en dev.')
+        branchSources {
+          branchSource {
+            source {
+              git {
+                id('shape-game-repo')
+                remote('${REPO_URL}')
+                traits {
+                  gitBranchDiscovery()
+                  // Solo estas ramas: el resto no se construye
+                  headWildcardFilter {
+                    includes('main feature/*')
+                    excludes('')
+                  }
+                }
+              }
+            }
+          }
+        }
+        // Revisa el repositorio cada 5 minutos: si una rama tiene commits nuevos,
+        // lanza su build (GitHub no puede mandarle un webhook a un Jenkins local)
+        triggers {
+          periodicFolderTrigger {
+            interval('5m')
+          }
+        }
+        // Cuando una rama se borra en el repositorio, su sub-job se elimina
+        orphanedItemStrategy {
+          discardOldItems {
+            numToKeep(0)
+          }
+        }
+        factory {
+          workflowBranchProjectFactory {
+            scriptPath('Jenkinsfile')
+          }
+        }
+      }

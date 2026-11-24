@@ -5,16 +5,19 @@
   "main": "src/server.js",
   "scripts": {
     "start": "node src/server.js",
-    "dev": "node --watch src/server.js"
+    "dev": "node --watch src/server.js",
+    "test": "node --test --test-force-exit \"tests/**/*.test.js\"",
+    "pretest:ci": "node -e \"require('fs').mkdirSync('reports/tests',{recursive:true})\"",
+    "test:ci": "node --test --test-force-exit --test-reporter=spec --test-reporter-destination=stdout --test-reporter=junit --test-reporter-destination=reports/tests/junit.xml \"tests/**/*.test.js\""
   },
   "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^4.19.2",
-    "ioredis": "^5.4.1",
-    "uuid": "^9.0.1"
+    "@prometheus-io/client": "0.16.1",
+    "express": "^4.22.3",
+    "helmet": "8.3.0",
+    "ioredis": "^6.0.0"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=22.0.0"
   },
   "author": "",
   "license": "MIT"

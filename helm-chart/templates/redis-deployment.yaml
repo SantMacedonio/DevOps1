@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "shape-game.redisName" . }}
+  labels:
+    {{- include "shape-game.labels" . | nindent 4 }}
+    {{- include "shape-game.redisSelectorLabels" . | nindent 4 }}
+spec:
+  replicas: 1
+  strategy:
+    # Volumen ReadWriteOnce: evita dos pods montando el mismo volumen
+    type: Recreate
+  selector:
+    matchLabels:
+      {{- include "shape-game.redisSelectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "shape-game.labels" . | nindent 8 }}
+        {{- include "shape-game.redisSelectorLabels" . | nindent 8 }}
+      annotations:
+        checksum/config: {{ include (print $.Template.BasePath "/redis-configmap.yaml") . | sha256sum }}
+    spec:
+      automountServiceAccountToken: false
+      # Sin variables <SERVICIO>_PORT inyectadas por Kubernetes (podrían pisar REDIS_PORT)
+      enableServiceLinks: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 999
+        runAsGroup: 1000
+        fsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: redis
+          image: "{{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag }}"
+          imagePullPolicy: {{ .Values.redis.image.pullPolicy }}
+          # Sin command: se usa el CMD de la imagen (redis-server <redis.conf>)
+          ports:
+            - containerPort: {{ .Values.redis.port }}
+              name: redis
+          securityContext:
+            {{- include "shape-game.containerSecurityContext" . | nindent 12 }}
+          resources:
+            {{- toYaml .Values.redis.resources | nindent 12 }}
+          volumeMounts:
+            - name: data
+              mountPath: /data
+            - name: config
+              mountPath: /usr/local/etc/redis
+              readOnly: true
+          livenessProbe:
+            tcpSocket:
+              port: redis
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          # Sin shell (no "sh -c"): la regla propia de Falco alertaría en cada probe
+          readinessProbe:
+            exec:
+              command: ["redis-cli", "-p", "{{ .Values.redis.port }}", "ping"]
+            initialDelaySeconds: 3
+            periodSeconds: 5
+      volumes:
+        - name: config
+          configMap:
+            name: {{ include "shape-game.redisName" . }}-config
+        - name: data
+          {{- if .Values.redis.persistence.enabled }}
+          persistentVolumeClaim:
+            claimName: {{ include "shape-game.redisName" . }}-data
+          {{- else }}
+          # Sin persistencia: los datos se pierden al recrear el pod
+          emptyDir: {}
+          {{- end }}

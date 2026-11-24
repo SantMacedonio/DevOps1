@@ -223,7 +223,11 @@ function sanitizeState(rawState, playerId, prestigeEnabled = true) {
     clickDamage: typeof legacyUpgrades.clickDamage === 'number' ? legacyUpgrades.clickDamage : (legacyUpgrades.clickPower || 0),
     clusterSpawn: legacyUpgrades.clusterSpawn || 0,
     rapidPulse: legacyUpgrades.rapidPulse || 0,
-    autoTurret: prestigeEnabled ? (legacyUpgrades.autoTurret || 0) : 0
+    // Se conserva aunque esta versión no tenga prestigio: blue y green comparten
+    // Redis, y si se vuelve atrás a una versión sin prestigio, no puede borrar
+    // las torretas que el jugador compró en la otra. Sin prestigio simplemente
+    // no se usan (el frontend las ignora y el servidor no deja comprarlas).
+    autoTurret: legacyUpgrades.autoTurret || 0
   };
 
   const merged = {

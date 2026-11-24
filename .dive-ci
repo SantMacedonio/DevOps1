@@ -1,0 +1,8 @@
+# Umbrales de Dive en modo CI (dive --ci). Si no se cumplen, el análisis falla.
+rules:
+  # Eficiencia mínima de la imagen (bytes útiles / bytes totales)
+  lowestEfficiency: 0.95
+  # Espacio desperdiciado máximo (archivos duplicados/borrados entre capas)
+  highestWastedBytes: 20MB
+  # Porcentaje máximo desperdiciado sobre las capas propias (no la base)
+  highestUserWastedPercent: 0.10

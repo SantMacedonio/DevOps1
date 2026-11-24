@@ -1,0 +1,13 @@
+apiVersion: v2
+name: shape-game
+description: >-
+  Shape Popper - juego clicker con despliegue Blue/Green en Kubernetes.
+  Incluye la aplicación (Express + frontend) en sus dos versiones y Redis.
+type: application
+# Versión de la Chart (cambia cuando cambian las plantillas)
+version: 1.0.0
+# Versión de la aplicación que se despliega por defecto (Blue)
+appVersion: "v1.0.0"
+keywords: [blue-green, nodejs, redis, game]
+maintainers:
+  - name: Santiago Aurrecochea

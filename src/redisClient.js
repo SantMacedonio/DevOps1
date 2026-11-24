@@ -42,7 +42,11 @@ function initRedis() {
   }
 }
 
-initRedis();
+if (config.redis.enabled) {
+  initRedis();
+} else {
+  console.log('[Redis] Disabled (REDIS_ENABLED=false): using in-memory store only');
+}
 
 async function getPlayerState(playerId) {
   if (!playerId) return null;
@@ -88,6 +92,42 @@ async function savePlayerState(playerId, state) {
   return true;
 }
 
+// --- Jugadores activos (métrica de negocio) ---------------------------------
+// Sorted set compartido por todos los pods: score = último acceso (ms).
+// Al estar en Redis, el conteo es global y no depende de a qué pod llegó cada petición.
+const ACTIVE_KEY = 'metrics:active_players';
+const localActivePlayers = new Map();
+
+async function touchActivePlayer(playerId) {
+  if (!playerId) return;
+  const now = Date.now();
+  localActivePlayers.set(playerId, now);
+  if (isConnected && redis) {
+    try {
+      await redis.zadd(ACTIVE_KEY, now, playerId);
+    } catch (err) {
+      console.error('[Redis] Error tracking active player:', err.message);
+    }
+  }
+}
+
+async function countActivePlayers(windowMs) {
+  const since = Date.now() - windowMs;
+  if (isConnected && redis) {
+    try {
+      await redis.zremrangebyscore(ACTIVE_KEY, '-inf', since);
+      return await redis.zcard(ACTIVE_KEY);
+    } catch (err) {
+      console.error('[Redis] Error counting active players:', err.message);
+    }
+  }
+  // Fallback local (solo los jugadores vistos por este pod)
+  for (const [id, ts] of localActivePlayers) {
+    if (ts < since) localActivePlayers.delete(id);
+  }
+  return localActivePlayers.size;
+}
+
 async function pingRedis() {
   if (!isConnected || !redis) return false;
   try {
@@ -102,5 +142,7 @@ module.exports = {
   getPlayerState,
   savePlayerState,
   pingRedis,
+  touchActivePlayer,
+  countActivePlayers,
   isRedisConnected: () => isConnected
 };

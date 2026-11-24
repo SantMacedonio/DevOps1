@@ -1,0 +1,35 @@
+  Using CI config: /.dive-ci
+Image Source: docker://shape-game:v2
+Extracting image from docker-engine... (this can take a while for large images)
+Analyzing image...
+  efficiency: 96.0004 %
+  wastedBytes: 12282157 bytes (12 MB)
+  userWastedPercent: 8.3817 %
+Inefficient Files:
+Count  Wasted Space  File Path
+    2         10 MB  /usr/lib/libcrypto.so.3
+    2        1.7 MB  /usr/lib/libssl.so.3
+    2        200 kB  /usr/lib/ossl-modules/legacy.so
+    2        108 kB  /usr/lib/libz.so.1.3.2
+    2         95 kB  /usr/lib/engines-3/loader_attic.so
+    2         45 kB  /usr/lib/engines-3/padlock.so
+    2         37 kB  /usr/lib/engines-3/afalg.so
+    2         31 kB  /lib/apk/db/installed
+    2         28 kB  /usr/lib/engines-3/capi.so
+    2         25 kB  /etc/ssl/openssl.cnf.dist
+    2         25 kB  /etc/ssl/openssl.cnf
+    2        3.8 kB  /lib/apk/db/scripts.tar.gz
+    2        1.4 kB  /etc/passwd
+    2        1.0 kB  /etc/group
+    2         824 B  /etc/ssl/ct_log_list.cnf
+    2         824 B  /etc/ssl/ct_log_list.cnf.dist
+    2         546 B  /etc/shadow
+    2         190 B  /lib/apk/db/triggers
+    2         165 B  /etc/apk/world
+    2           0 B  /usr/lib/libz.so.1
+Results:
+  PASS: highestUserWastedPercent
+  PASS: highestWastedBytes
+  PASS: lowestEfficiency
+Result:PASS [Total:3] [Passed:3] [Failed:0] [Warn:0] [Skipped:0]
+

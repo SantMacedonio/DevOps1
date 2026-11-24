@@ -1,0 +1,28 @@
+# Snyk CLI 1.1309.0 (dependencias npm)
+# Fecha: 2026-11-24 14:21:48 UTC
+# Comando: snyk test --json-file-output=<archivo>
+
+
+Testing C:\Users\Usuario\Documents\DevOpsEntr\DevOps1...
+
+Package manager:   npm
+Target file:       package-lock.json
+Project name:      k8s-shape-popper
+Open source:       no
+Project path:      C:\Users\Usuario\Documents\DevOpsEntr\DevOps1
+Licenses:          enabled
+
+✔ Tested 80 dependencies for known issues, no vulnerable paths found.
+
+Next steps:
+- Run `snyk monitor` to be notified about new related vulnerabilities.
+- Run `snyk test` as part of your CI/test.
+
+
+
+## Resumen, vulnerabilidades criticas y correcciones propuestas
+============ Snyk (dependencias npm) ============
+Proyecto: k8s-shape-popper   Dependencias analizadas: 80
+Umbral de corte: critical
+Vulnerabilidades: critical=0  high=0  medium=0  low=0
+  Sin vulnerabilidades conocidas: no hace falta ninguna corrección.

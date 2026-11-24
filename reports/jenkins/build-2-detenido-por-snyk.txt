@@ -1,0 +1,239 @@
+Started by user Administrador
+Checking out git file:///repo into /var/jenkins_home/workspace/shape-game@script/fffa1164d41bc96e0c4ae750f6fcbaaf0eb2176e0bee9b568695a9730b74f1cd to read Jenkinsfile
+The recommended git tool is: NONE
+No credentials specified
+ > git rev-parse --resolve-git-dir /var/jenkins_home/workspace/shape-game@script/fffa1164d41bc96e0c4ae750f6fcbaaf0eb2176e0bee9b568695a9730b74f1cd/.git # timeout=10
+Fetching changes from the remote Git repository
+ > git config remote.origin.url file:///repo # timeout=10
+Fetching upstream changes from file:///repo
+ > git --version # timeout=10
+ > git --version # 'git version 2.47.3'
+ > git fetch --tags --force --progress -- file:///repo +refs/heads/*:refs/remotes/origin/* # timeout=10
+ > git rev-parse refs/remotes/origin/demo/vulnerabilidad-critica^{commit} # timeout=10
+Checking out Revision 45ef8e626944de3b8395ad8f91996809524b32cf (refs/remotes/origin/demo/vulnerabilidad-critica)
+ > git config core.sparsecheckout # timeout=10
+ > git checkout -f 45ef8e626944de3b8395ad8f91996809524b32cf # timeout=10
+Commit message: "Demo: dependencia con vulnerabilidad crítica (node-serialize 0.0.4)"
+First time build. Skipping changelog.
+[Pipeline] Start of Pipeline
+[Pipeline] node
+Running on Jenkins in /var/jenkins_home/workspace/shape-game
+[Pipeline] {
+[Pipeline] withEnv
+[Pipeline] {
+[Pipeline] timestamps
+[Pipeline] {
+[Pipeline] ansiColor
+[Pipeline] {
+[2026-11-24T03:30:27.875Z] 
+[Pipeline] timeout
+[2026-11-24T03:30:27.976Z] Timeout set to expire in 40 min
+[Pipeline] {
+[Pipeline] stage
+[Pipeline] { (1. Checkout)
+[Pipeline] script
+[Pipeline] {
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] checkout
+[2026-11-24T03:30:28.450Z] The recommended git tool is: NONE
+[2026-11-24T03:30:28.450Z] No credentials specified
+[2026-11-24T03:30:28.452Z] Cloning the remote Git repository
+[2026-11-24T03:30:28.455Z] Cloning repository file:///repo
+[2026-11-24T03:30:28.458Z]  > git init /var/jenkins_home/workspace/shape-game # timeout=10
+[2026-11-24T03:30:28.496Z] Fetching upstream changes from file:///repo
+[2026-11-24T03:30:28.497Z]  > git --version # timeout=10
+[2026-11-24T03:30:28.517Z]  > git --version # 'git version 2.47.3'
+[2026-11-24T03:30:28.517Z]  > git fetch --tags --force --progress -- file:///repo +refs/heads/*:refs/remotes/origin/* # timeout=10
+[2026-11-24T03:30:29.698Z]  > git config remote.origin.url file:///repo # timeout=10
+[2026-11-24T03:30:29.707Z]  > git config --add remote.origin.fetch +refs/heads/*:refs/remotes/origin/* # timeout=10
+[2026-11-24T03:30:29.726Z] Avoid second fetch
+[2026-11-24T03:30:29.726Z]  > git rev-parse refs/remotes/origin/demo/vulnerabilidad-critica^{commit} # timeout=10
+[2026-11-24T03:30:29.754Z] Checking out Revision 45ef8e626944de3b8395ad8f91996809524b32cf (refs/remotes/origin/demo/vulnerabilidad-critica)
+[2026-11-24T03:30:29.754Z]  > git config core.sparsecheckout # timeout=10
+[2026-11-24T03:30:29.761Z]  > git checkout -f 45ef8e626944de3b8395ad8f91996809524b32cf # timeout=10
+[2026-11-24T03:30:29.801Z] Commit message: "Demo: dependencia con vulnerabilidad crítica (node-serialize 0.0.4)"
+[Pipeline] sh
+[2026-11-24T03:30:30.143Z] + echo Repositorio clonado:
+[2026-11-24T03:30:30.143Z] Repositorio clonado:
+[2026-11-24T03:30:30.143Z] + git log -1 --format=  Commit:  %H%n  Autor:   %an%n  Fecha:   %ad%n  Mensaje: %s
+[2026-11-24T03:30:30.143Z]   Commit:  45ef8e626944de3b8395ad8f91996809524b32cf
+[2026-11-24T03:30:30.143Z]   Autor:   SantMacedonio
+[2026-11-24T03:30:30.143Z]   Fecha:   Tue Nov 24 00:09:16 2026 -0300
+[2026-11-24T03:30:30.144Z]   Mensaje: Demo: dependencia con vulnerabilidad crítica (node-serialize 0.0.4)
+[2026-11-24T03:30:30.144Z] + mkdir -p reports/ci
+[Pipeline] script
+[Pipeline] {
+[Pipeline] sh
+[2026-11-24T03:30:30.504Z] + git rev-parse --short HEAD
+[Pipeline] sh
+[2026-11-24T03:30:30.822Z] + node -p require('./package.json').version
+[Pipeline] echo
+[2026-11-24T03:30:30.959Z] Imagen a construir: shape-game:1.0.0-2-45ef8e6
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (2. Seguridad del código)
+[Pipeline] parallel
+[Pipeline] { (Branch: Semgrep (SAST))
+[Pipeline] { (Branch: Snyk (dependencias))
+[Pipeline] stage
+[Pipeline] { (Semgrep (SAST))
+[Pipeline] stage
+[Pipeline] { (Snyk (dependencias))
+[Pipeline] script
+[Pipeline] {
+[Pipeline] script
+[Pipeline] {
+[Pipeline] }
+[Pipeline] withCredentials
+[2026-11-24T03:30:31.718Z] Masking supported pattern matches of $SNYK_TOKEN
+[Pipeline] // script
+[Pipeline] {
+[Pipeline] sh
+[Pipeline] sh
+[2026-11-24T03:30:32.102Z] + semgrep --version
+[2026-11-24T03:30:32.199Z] + snyk --version
+[2026-11-24T03:30:32.750Z] 1.1309.0
+[2026-11-24T03:30:32.752Z] + snyk test --severity-threshold=critical --json-file-output=reports/ci/snyk.json
+[2026-11-24T03:30:37.301Z] 1.186.0
+[2026-11-24T03:30:37.552Z] + semgrep scan --config p/javascript --config p/nodejs --config p/expressjs --config p/xss --config p/owasp-top-ten --config p/security-audit --config p/secrets --config p/dockerfile --config p/kubernetes --metrics=off --no-git-ignore --exclude node_modules --exclude reports --exclude .npm-cache --exclude k8s/security/tests --json-output=reports/ci/semgrep.json --text-output=reports/ci/semgrep.txt
+[2026-11-24T03:30:47.455Z]                
+[2026-11-24T03:30:47.455Z]                
+[2026-11-24T03:30:47.455Z] ┌─────────────┐
+[2026-11-24T03:30:47.455Z] │ Scan Status │
+[2026-11-24T03:30:47.455Z] └─────────────┘
+[2026-11-24T03:30:47.455Z]   Scanning 85 files with 740 Code rules:
+[2026-11-24T03:30:47.455Z]                                                                                                                         
+[2026-11-24T03:30:47.455Z]   Language      Rules   Files          Origin      Rules                                                                
+[2026-11-24T03:30:47.455Z]  ─────────────────────────────        ───────────────────                                                               
+[2026-11-24T03:30:47.455Z]   <multilang>      61      57          Community     740                                                                
+[2026-11-24T03:30:47.455Z]   yaml             32      24                                                                                           
+[2026-11-24T03:30:47.455Z]   bash              1      16                                                                                           
+[2026-11-24T03:30:47.455Z]   js               83       9                                                                                           
+[2026-11-24T03:30:47.455Z]   dockerfile        7       3                                                                                           
+[2026-11-24T03:30:47.455Z]   json              3       3                                                                                           
+[2026-11-24T03:30:47.455Z]   php              22       1                                                                                           
+[2026-11-24T03:30:47.455Z]   html              1       1                                                                                           
+[2026-11-24T03:30:47.455Z]                                                                                                                         
+[2026-11-24T03:30:47.527Z] 
+[2026-11-24T03:30:47.527Z] Testing /var/jenkins_home/workspace/shape-game...
+[2026-11-24T03:30:47.527Z] 
+[2026-11-24T03:30:47.527Z] Tested 82 dependencies for known issues, found 1 issue, 1 vulnerable path.
+[2026-11-24T03:30:47.527Z] 
+[2026-11-24T03:30:47.527Z] 
+[2026-11-24T03:30:47.527Z] Issues with no direct upgrade or patch:
+[2026-11-24T03:30:47.527Z]   ✗ Arbitrary Code Execution [Critical Severity][https://security.snyk.io/vuln/npm:node-serialize:20170208] in node-serialize@0.0.4
+[2026-11-24T03:30:47.527Z]     introduced by node-serialize@0.0.4
+[2026-11-24T03:30:47.527Z]   No upgrade or patch available
+[2026-11-24T03:30:47.527Z] 
+[2026-11-24T03:30:47.527Z] 
+[2026-11-24T03:30:47.527Z] 
+[2026-11-24T03:30:47.527Z] Organization:      (omitido)
+[2026-11-24T03:30:47.527Z] Package manager:   npm
+[2026-11-24T03:30:47.527Z] Target file:       package-lock.json
+[2026-11-24T03:30:47.527Z] Project name:      k8s-shape-popper
+[2026-11-24T03:30:47.527Z] Open source:       no
+[2026-11-24T03:30:47.528Z] Project path:      /var/jenkins_home/workspace/shape-game
+[2026-11-24T03:30:47.528Z] Licenses:          enabled
+[2026-11-24T03:30:47.528Z] 
+[2026-11-24T03:30:47.528Z] 
+[Pipeline] sh
+[2026-11-24T03:30:47.874Z] + node ci/snyk-summary.js reports/ci/snyk.json
+[2026-11-24T03:30:47.874Z] ============ Snyk (dependencias npm) ============
+[2026-11-24T03:30:47.874Z] Proyecto: k8s-shape-popper   Dependencias analizadas: 82
+[2026-11-24T03:30:47.874Z] Umbral de corte: critical
+[2026-11-24T03:30:47.874Z] Vulnerabilidades: critical=1  high=0  medium=0  low=0
+[2026-11-24T03:30:47.874Z]   [CRITICAL] node-serialize@0.0.4  npm:node-serialize:20170208  Arbitrary Code Execution  (sin versión corregida)
+[2026-11-24T03:30:47.874Z]       ruta: k8s-shape-popper@1.0.0 > node-serialize@0.0.4
+[Pipeline] error
+[Pipeline] }
+[Pipeline] // withCredentials
+[Pipeline] }
+[Pipeline] // script
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[2026-11-24T03:30:48.930Z] Failed in branch Snyk (dependencias)
+[2026-11-24T03:30:51.580Z]                 
+[2026-11-24T03:30:51.580Z]                 
+[2026-11-24T03:30:51.580Z] ┌──────────────┐
+[2026-11-24T03:30:51.580Z] │ Scan Summary │
+[2026-11-24T03:30:51.580Z] └──────────────┘
+[2026-11-24T03:30:51.580Z] ✅ Scan completed successfully.
+[2026-11-24T03:30:51.580Z]  • Findings: 0 (0 blocking)
+[2026-11-24T03:30:51.580Z]  • Rules run: 209
+[2026-11-24T03:30:51.580Z]  • Targets scanned: 85
+[2026-11-24T03:30:51.580Z]  • Parsed lines: ~99.9%
+[2026-11-24T03:30:51.580Z]  • Scan skipped: 
+[2026-11-24T03:30:51.580Z]    ◦ Matching --exclude patterns: 2
+[2026-11-24T03:30:51.580Z]    ◦ Files matching .semgrepignore patterns: 3
+[2026-11-24T03:30:51.580Z]  • For a detailed list of skipped files and lines, run semgrep with the --verbose flag
+[2026-11-24T03:30:51.580Z] Ran 209 rules on 85 files: 0 findings.
+[2026-11-24T03:30:51.580Z] (need more rules? `semgrep login` for additional free Semgrep Registry rules)
+[2026-11-24T03:30:51.580Z] 
+[2026-11-24T03:30:51.580Z] If Semgrep missed a finding, please send us feedback to let us know!
+[2026-11-24T03:30:51.580Z] See https://semgrep.dev/docs/reporting-false-negatives/
+[Pipeline] sh
+[2026-11-24T03:30:51.890Z] + node ci/semgrep-gate.js reports/ci/semgrep.json
+[2026-11-24T03:30:51.890Z] ================ Semgrep (SAST) ================
+[2026-11-24T03:30:51.890Z] Archivos analizados: 85
+[2026-11-24T03:30:51.891Z] Hallazgos: ERROR=0  WARNING=0  INFO=0
+[2026-11-24T03:30:51.891Z] Avisos del análisis (archivos que no se pudieron leer): 9
+[2026-11-24T03:30:51.891Z] 
+[2026-11-24T03:30:51.891Z] [OK] Sin hallazgos de severidad ERROR
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // parallel
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (3. Build y tests)
+Stage "3. Build y tests" skipped due to earlier failure(s)
+[Pipeline] getContext
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (4. Imagen Docker)
+Stage "4. Imagen Docker" skipped due to earlier failure(s)
+[Pipeline] getContext
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (5. Deploy con Helm)
+Stage "5. Deploy con Helm" skipped due to earlier failure(s)
+[Pipeline] getContext
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] stage
+[Pipeline] { (Declarative: Post Actions)
+[Pipeline] archiveArtifacts
+[2026-11-24T03:30:53.120Z] Archiving artifacts
+[Pipeline] sh
+[2026-11-24T03:30:53.428Z] + docker image rm shape-game:1.0.0-2-45ef8e6
+[2026-11-24T03:30:53.428Z] + true
+[Pipeline] echo
+[2026-11-24T03:30:53.536Z] [X] Pipeline DETENIDO en la etapa 'Snyk (dependencias)'. Ver el log de esa etapa y los reportes archivados (reports/ci/).
+[Pipeline] cleanWs
+[2026-11-24T03:30:53.583Z] [WS-CLEANUP] Deleting project workspace...
+[2026-11-24T03:30:53.585Z] [WS-CLEANUP] Deferred wipeout is used...
+[2026-11-24T03:30:53.610Z] [WS-CLEANUP] done
+[Pipeline] }
+[Pipeline] // stage
+[Pipeline] }
+[Pipeline] // timeout
+[Pipeline] }
+[2026-11-24T03:30:53.763Z] 
+[Pipeline] // ansiColor
+[Pipeline] }
+[Pipeline] // timestamps
+[Pipeline] }
+[Pipeline] // withEnv
+[Pipeline] }
+[Pipeline] // node
+[Pipeline] End of Pipeline
+ERROR: Snyk encontró vulnerabilidades CRÍTICAS en las dependencias: el pipeline se detiene (ver el detalle arriba y reports/ci/snyk.json).
+Finished: FAILURE

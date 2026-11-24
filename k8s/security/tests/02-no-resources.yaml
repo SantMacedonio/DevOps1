@@ -1,0 +1,17 @@
+# NO CONFORME (solo viola require-requests-limits): contenedor sin requests ni limits.
+# Es un Pod suelto (no un Deployment) para mostrar que también se valida.
+apiVersion: v1
+kind: Pod
+metadata:
+  name: test-no-resources
+  labels: { app: policy-test }
+spec:
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 101
+  containers:
+    - name: web
+      image: nginxinc/nginx-unprivileged:1.29.3-alpine
+      securityContext:
+        allowPrivilegeEscalation: false
+        readOnlyRootFilesystem: true

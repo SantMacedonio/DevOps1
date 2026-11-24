@@ -1,0 +1,60 @@
+# Job que genera tráfico contra el Service "shape-game" (release de Helm en default) desde dentro del cluster.
+# Lo crean scripts/generate-traffic (que reemplazan DURATION/PLAYERS) junto con
+# el ConfigMap "loadgen-script" generado desde k8s/loadgen/loadgen.sh.
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: loadgen
+  labels:
+    app: loadgen
+spec:
+  backoffLimit: 0
+  ttlSecondsAfterFinished: 600
+  template:
+    metadata:
+      labels:
+        app: loadgen
+    spec:
+      restartPolicy: Never
+      # El pod no usa la API de Kubernetes: no montar el token de la ServiceAccount
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+        runAsGroup: 1000
+        seccompProfile:
+          type: RuntimeDefault
+      containers:
+        - name: loadgen
+          # Se reutiliza la imagen de la app (trae sh y wget, 0 vulnerabilidades)
+          # en lugar de curlimages/curl, que tenía 32 vulnerabilidades HIGH.
+          image: shape-game:v1
+          imagePullPolicy: IfNotPresent
+          command: ["sh", "/scripts/loadgen.sh"]
+          env:
+            - name: TARGET_URL
+              value: http://shape-game
+            - name: DURATION
+              value: "__DURATION__"
+            - name: PLAYERS
+              value: "__PLAYERS__"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          resources:
+            requests:
+              cpu: 50m
+              memory: 32Mi
+            limits:
+              cpu: 300m
+              memory: 64Mi
+          volumeMounts:
+            - name: script
+              mountPath: /scripts
+              readOnly: true
+      volumes:
+        - name: script
+          configMap:
+            name: loadgen-script
