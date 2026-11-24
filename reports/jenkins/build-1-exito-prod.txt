@@ -106,7 +106,7 @@ Running on Jenkins in /var/jenkins_home/workspace/shape-game
 [2026-11-24T03:10:18.125Z] 
 [2026-11-24T03:10:18.125Z] Testing /var/jenkins_home/workspace/shape-game...
 [2026-11-24T03:10:18.126Z] 
-[2026-11-24T03:10:18.126Z] Organization:      santiagoaurrecochea3012
+[2026-11-24T03:10:18.126Z] Organization:      (omitido)
 [2026-11-24T03:10:18.126Z] Package manager:   npm
 [2026-11-24T03:10:18.126Z] Target file:       package-lock.json
 [2026-11-24T03:10:18.126Z] Project name:      k8s-shape-popper
